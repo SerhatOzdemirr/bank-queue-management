@@ -3,29 +3,21 @@ export class User {
   private userToNumber = new Map<string, number>();
 
   constructor() {
-    this.userToNumber.clear(); 
+    this.userToNumber.clear();
     this.loadFromStorage();
   }
-  isEmailOrPasswordTaken(
-    email: string,
-    password: string,
-    identityKey: string
-  ): boolean {
-    const existingKeys = Array.from(this.userToNumber.keys());
 
-    console.log(existingKeys);
-    return existingKeys.some((key) => {
-      if (key === identityKey) return false; // kendi girişiyse sorun yok
-
-      const [, storedEmail, storedPassword] = key.split('|');
-
-      // Email veya şifre başka kullanıcı tarafından kullanılmışsa engelleriz
-      return storedEmail === email.toLowerCase() || storedPassword === password;
+  isEmailTaken(email: string, identityKey: string): boolean {
+    return Array.from(this.userToNumber.keys()).some((key) => {
+      if (key === identityKey) return false; // kendi kaydınızı sayma
+      const [, storedEmail] = key.split("|");
+      return storedEmail === email.toLowerCase();
     });
   }
+
   private loadFromStorage() {
-    const data = localStorage.getItem('userMap');
-    const last = localStorage.getItem('lastNumber');
+    const data = localStorage.getItem("userMap");
+    const last = localStorage.getItem("lastNumber");
 
     if (data) {
       const parsed = JSON.parse(data);
@@ -45,8 +37,8 @@ export class User {
       obj[key] = value;
     });
 
-    localStorage.setItem('userMap', JSON.stringify(obj));
-    localStorage.setItem('lastNumber', this.lastNumber.toString());
+    localStorage.setItem("userMap", JSON.stringify(obj));
+    localStorage.setItem("lastNumber", this.lastNumber.toString());
   }
 
   assignNumber(identityKey: string): number {
@@ -57,7 +49,6 @@ export class User {
     this.lastNumber += 1;
     this.userToNumber.set(identityKey, this.lastNumber);
     this.saveToStorage();
-
     return this.lastNumber;
   }
 }
