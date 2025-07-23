@@ -42,7 +42,7 @@ export class Login {
 
     localStorage.setItem("username", u);
     localStorage.setItem("identityKey", identityKey);
-    this.router.navigate(["/counter"]);
+    this.router.navigate(["/numerator"]);
   }
 
   private buildIdentityKey(username: string, email: string, password: string): string {
