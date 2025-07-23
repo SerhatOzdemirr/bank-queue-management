@@ -2,7 +2,7 @@ import { Component, inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
-import { User } from "../../services/user"; // servis burada inject edilecek
+import { User } from "../../services/user";
 
 @Component({
   standalone: true,
@@ -33,25 +33,19 @@ export class Login {
 
     const identityKey = this.buildIdentityKey(u, e, p);
 
-    const emailTaken = this.userService.isEmailTaken(e, identityKey);
+    const isRegistered = this.userService.isRegistered(identityKey);
 
-    if (emailTaken) {
-      this.error = "This email has already been used by another user.";
+    if (!isRegistered) {
+      this.error = "User not found. Please sign up first.";
       return;
     }
 
-
-    // Eğer buraya geldiyseniz ne email ne şifre çakışıyor:
     localStorage.setItem("username", u);
     localStorage.setItem("identityKey", identityKey);
     this.router.navigate(["/counter"]);
   }
 
-  private buildIdentityKey(
-    username: string,
-    email: string,
-    password: string
-  ): string {
+  private buildIdentityKey(username: string, email: string, password: string): string {
     return `${username.toLowerCase()}|${email.toLowerCase()}|${password}`;
   }
 }

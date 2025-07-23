@@ -1,0 +1,13 @@
+<div class="login-outer-container">
+  <div class="login-container">
+    <h2 class="login-title">Sign Up</h2>
+
+    <input [(ngModel)]="username" placeholder="Username" />
+    <input [(ngModel)]="email" placeholder="E-mail" />
+    <input [(ngModel)]="password" placeholder="Password" type="password" />
+
+    <button class="login-btn" (click)="signup()">Sign Up</button>
+
+    <p *ngIf="error" class="login-error">{{ error }}</p>
+  </div>
+</div>
