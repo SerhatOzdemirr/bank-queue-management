@@ -1,51 +1,37 @@
-import { Component, inject } from "@angular/core";
-import { Router } from "@angular/router";
-import { FormsModule } from "@angular/forms";
-import { CommonModule } from "@angular/common";
-import { User } from "../../services/user";
+// src/app/components/login/login.component.ts
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   standalone: true,
-  selector: "app-login",
+  selector: 'app-login',
   imports: [FormsModule, CommonModule],
-  templateUrl: "./login.html",
-  styleUrl: "./login.css",
-  providers: [User],
+  templateUrl: './login.html',
+  styleUrls: ['./login.css']
 })
 export class Login {
-  username = "";
-  email = "";
-  password = "";
-  error = "";
+  email = '';
+  password = '';
+  error = '';
 
   private router = inject(Router);
-  private userService = inject(User);
+  private auth = inject(AuthService);
 
   login() {
-    const u = this.username.trim();
-    const e = this.email.trim().toLowerCase();
-    const p = this.password.trim();
-
-    if (!u || !e || !p) {
-      this.error = "All fields are required.";
+    if (!this.email || !this.password) {
+      this.error = 'All fields are required.';
       return;
     }
 
-    const identityKey = this.buildIdentityKey(u, e, p);
-
-    const isRegistered = this.userService.isRegistered(identityKey);
-
-    if (!isRegistered) {
-      this.error = "User not found. Please sign up first.";
-      return;
-    }
-
-    localStorage.setItem("username", u);
-    localStorage.setItem("identityKey", identityKey);
-    this.router.navigate(["/numerator"]);
-  }
-
-  private buildIdentityKey(username: string, email: string, password: string): string {
-    return `${username.toLowerCase()}|${email.toLowerCase()}|${password}`;
+    this.auth.login({
+      email: this.email.trim().toLowerCase(),
+      password: this.password
+    }).subscribe({
+      next: () => this.router.navigate(['/numerator']),
+      error: err => this.error = err.error || 'Login failed.'
+    });
   }
 }
