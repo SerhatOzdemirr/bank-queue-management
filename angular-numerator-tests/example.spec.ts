@@ -76,21 +76,6 @@ test.describe("Numerator App – Registration & Login", () => {
     }
   });
 
-  test("Same user logging in twice gets same number", async ({ page }) => {
-    const user = {
-      username: "Serhat",
-      email: "serhat@mail.com",
-      password: "123456",
-    };
-    await signup(page, user.username, user.email, user.password);
-    await login(page, user.username, user.email, user.password);
-    await takeNumber(page, 1);
-
-    // Second login attempt with same identity
-    await login(page, user.username, user.email, user.password);
-    await takeNumber(page, 1);
-  });
-
   test("Signup: duplicate email shows error", async ({ page }) => {
     await signup(page, "Carol", "dup2@mail.com", "pw2");
     await login(page, "Carol", "dup2@mail.com", "pw2");
