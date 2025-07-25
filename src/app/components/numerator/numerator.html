@@ -1,14 +1,40 @@
 <div class="container-outer-numerator">
   <div class="container-numerator">
-    <h2 class="title-numerator">Numerator</h2>
-    <p>Welcome {{ username }}</p>
-    <button
-      class="take-number-btn"
-      (click)="assignNumber()"
-      [disabled]="number !== null"
-    >
-      Take the Number
-    </button>
-    <p class="taken-number" *ngIf="number !== null">Your Number is: {{ number }}</p>
+    <!-- Stepper Başlıkları -->
+    <div class="stepper">
+      <div class="step-item" [class.active]="step >= 1">1. Select Service</div>
+      <div class="step-item" [class.active]="step >= 2">2. Take a Number</div>
+      <div class="step-item" [class.active]="step >= 3">3. Result</div>
+    </div>
+
+    <!-- Step 1: Hizmet Seçimi -->
+    <div *ngIf="step === 1" class="step-content">
+      <label for="service">Select Service:</label>
+      <select id="service" [(ngModel)]="selectedService">
+        <option *ngFor="let s of services" [value]="s.key">
+          {{ s.label }}
+        </option>
+      </select>
+      <button class="btn-next" (click)="nextStep()">Next</button>
+    </div>
+
+    <!-- Step 2: Numara Alma -->
+    <div *ngIf="step === 2" class="step-content">
+      <button class="take-number-btn" (click)="assignNumber()">
+        Take the Number
+      </button>
+      <button class="btn-prev" (click)="prevStep()">Back</button>
+    </div>
+
+    <!-- Step 3: Sonuç -->
+    <div *ngIf="step === 3 && ticket" class="step-content">
+      <div class="result">
+        Your Number is: <strong>{{ ticket.number }}</strong>
+        <p><strong>Service:</strong> {{ ticket.serviceLabel }}</p>
+        <p><strong>Taken At:</strong> {{ ticket.takenAt | date : "short" }}</p>
+      </div>
+
+      <button class="btn-prev" (click)="firstStep()">New Operation</button>
+    </div>
   </div>
 </div>
