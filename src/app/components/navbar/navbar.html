@@ -1,0 +1,37 @@
+<nav class="nav">
+  <a routerLink="/" class="brand">BankNumerator</a>
+
+  <a *ngIf="auth.isLoggedIn(); else disabledNum" routerLink="/numerator">
+    Take Number
+  </a>
+  <ng-template #disabledNum>
+    <span class="disabled-link">Take Number</span>
+  </ng-template>
+
+  <div class="spacer"></div>
+
+  <label for="theme-select" class="theme-label">Theme:</label>
+  <select
+    #themeSelect
+    id="theme-select"
+    (change)="applyTheme(themeSelect.value)"
+    [value]="currentTheme"
+  >
+    <option *ngFor="let t of themes" [value]="t">
+      {{ t === "default" ? "Default" : (t | titlecase) }}
+    </option>
+  </select>
+
+  <!-- Auth Links -->
+  <a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="sign-in-link">
+    Sign In
+  </a>
+  <a *ngIf="!auth.isLoggedIn()" routerLink="/signup" class="sign-up-link">
+    Sign Up
+  </a>
+
+  <!-- Logout -->
+  <button *ngIf="auth.isLoggedIn()" class="logout-btn" (click)="logout()">
+    Logout
+  </button>
+</nav>
