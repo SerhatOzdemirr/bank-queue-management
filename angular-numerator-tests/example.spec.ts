@@ -19,7 +19,6 @@ async function navigateToLoginPage(page: Page) {
   await page.goto(`${baseUrl}/login`);
 }
 
-
 async function login(page: Page, email: string, password: string) {
   await page.goto(`${baseUrl}/login`);
   await page.getByPlaceholder("Email").fill(email);
@@ -166,5 +165,39 @@ test.describe.serial("Numerator App – Registration & Login", () => {
   test("Navbar Sign In routing", async ({ page }) => {
     await page.locator(".nav a").filter({ hasText: "Sign In" }).click();
     await expect(page).toHaveURL("http://localhost:4200/login");
+  });
+
+  test("Guard: giriş yapmayan kullanıcı /numerator'a erişemez", async ({
+    page,
+  }) => {
+    await page.goto(`${baseUrl}/numerator`);
+    await expect(page).toHaveURL(`${baseUrl}/login?returnUrl=%2Fnumerator`);
+  });
+  test("Guard: giriş yapan kullanıcı /numerator'a erişebilir", async ({
+    page,
+  }) => {
+    await signup(page, "GuardUser", "guard@mail.com", "123");
+    await login(page, "guard@mail.com", "123");
+    await page.goto(`${baseUrl}/numerator`);
+    await expect(page).toHaveURL(/\/numerator$/);
+    await expect(page.locator(".stepper")).toBeVisible();
+  });
+  test("Logout: kullanıcı oturumu kapattığında yönlendirme login'e yapılmalı", async ({
+    page,
+  }) => {
+    // Kullanıcı oluştur ve giriş yap
+    await signup(page, "LogoutUser", "logout@mail.com", "123456");
+    await login(page, "logout@mail.com", "123456");
+
+    // Numerator sayfasına gittiğinden emin ol
+    await expect(page).toHaveURL(/\/numerator$/);
+    await expect(page.locator(".logout-btn")).toBeVisible();
+
+    // Logout işlemi
+    await page.locator(".logout-btn").click();
+
+    // Login sayfasına yönlendirildiğini ve Sign In butonunun göründüğünü kontrol et
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
   });
 });
