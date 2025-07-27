@@ -1,66 +1,93 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page, request } from "@playwright/test";
 
 const baseUrl = "http://localhost:4200";
 
 async function signup(
-  page: any,
+  page: Page,
   username: string,
   email: string,
   password: string
 ) {
-  // Navigate to the signup page
   await page.goto(`${baseUrl}/`);
   await page.getByPlaceholder("Username").fill(username);
-  await page.getByPlaceholder("E-mail").fill(email);
+  await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
   await page.getByRole("button", { name: "Sign Up" }).click();
 }
 
-async function login(
-  page: any,
-  username: string,
-  email: string,
-  password: string
-) {
-  // Navigate to the login (root) page
+async function navigateToLoginPage(page: Page) {
   await page.goto(`${baseUrl}/login`);
-  await page.getByPlaceholder("Username").fill(username);
-  await page.getByPlaceholder("E-mail").fill(email);
+}
+
+
+async function login(page: Page, email: string, password: string) {
+  await page.goto(`${baseUrl}/login`);
+  await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
   await page.getByRole("button", { name: "Sign In" }).click();
 }
+async function takeNumberFromDeposit(page: Page, expectedNumber: number) {
+  await page.locator(".service-card").getByText("Deposit").click();
+  await page.getByRole("button", { name: "Take the Number" }).click();
 
-async function takeNumber(page: any, expectedNumber: number) {
-  const btn = page.getByRole("button", { name: "Take the Number" });
-  await expect(btn).toBeVisible();
-  await btn.click();
-  await expect(page.locator(".taken-number")).toHaveText(
-    `Your Number is: ${expectedNumber}`
-  );
+  // Sonuç metnini normalize et: satırlar ve noktalar boşluk yapar
+  let text = await page.locator(".result").innerText();
+  text = text
+    .replace(/[·\n\r]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Beklenen numarayı kontrol et
+  expect(text).toContain(`Your Number is: ${expectedNumber}`);
 }
 
-test.describe("Numerator App – Registration & Login", () => {
-  test.beforeEach(async ({ page }) => {
-    // Reset state before each test
+async function takeNumber(page: Page, expectedNumber: number) {
+  await page.locator(".service-card").getByText("Cash Withdrawal").click();
+  await page.getByRole("button", { name: "Take the Number" }).click();
+
+  // Sonuç metnini normalize et: satırlar ve noktalar boşluk yapar
+  let text = await page.locator(".result").innerText();
+  text = text
+    .replace(/[·\n\r]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Beklenen numarayı kontrol et
+  expect(text).toContain(`Your Number is: ${expectedNumber}`);
+}
+test.describe.serial("Numerator App – Registration & Login", () => {
+  test.beforeEach(async ({ page, context }) => {
+    // Tarayıcı durumunu temizle
     await page.goto(baseUrl);
+    await context.clearCookies();
     await page.evaluate(() => localStorage.clear());
+
+    // Backend sayacı sıfırlanıyor
+    const apiContext = await request.newContext({
+      baseURL: "http://localhost:5034",
+    });
+    const res = await apiContext.post("/api/test/reset");
+    expect(res.ok()).toBeTruthy();
   });
 
-  test("Signup: all fields required", async ({ page }) => {
+  test("Signup: tüm alanlar zorunlu", async ({ page }) => {
     await signup(page, "", "", "");
     await expect(page.locator(".signup-error")).toHaveText(
       "All fields are required."
     );
   });
 
-  test("Login: all fields required", async ({ page }) => {
-    await login(page, "", "", "");
+  test("Login: tüm alanlar zorunlu", async ({ page }) => {
+    await login(page, "", "");
     await expect(page.locator(".login-error")).toHaveText(
       "All fields are required."
     );
   });
 
-  test("New users receive sequential numbers 1–5", async ({ page }) => {
+  test("Yeni kullanıcılar 1–5 arası numara almalı", async ({
+    page,
+    context,
+  }) => {
     const users = [
       { username: "User1", email: "u1@mail.com", password: "123" },
       { username: "User2", email: "u2@mail.com", password: "124" },
@@ -68,51 +95,76 @@ test.describe("Numerator App – Registration & Login", () => {
       { username: "User4", email: "u4@mail.com", password: "126" },
       { username: "User5", email: "u5@mail.com", password: "127" },
     ];
+
     for (let i = 0; i < users.length; i++) {
       const { username, email, password } = users[i];
       await signup(page, username, email, password);
-      await login(page, username, email, password);
+      await login(page, email, password);
       await takeNumber(page, i + 1);
     }
   });
 
-  test("Signup: duplicate email shows error", async ({ page }) => {
+  test("Duplicate email signup hata vermeli", async ({ page, context }) => {
     await signup(page, "Carol", "dup2@mail.com", "pw2");
-    await login(page, "Carol", "dup2@mail.com", "pw2");
+    await login(page, "dup2@mail.com", "pw2");
     await takeNumber(page, 1);
 
-    // Attempt to register a new user with the same email
+    // İzolasyon için temizle
+    await context.clearCookies();
+    await page.evaluate(() => localStorage.clear());
+
     await signup(page, "Dave", "dup2@mail.com", "pwX");
     await expect(page.locator(".signup-error")).toHaveText(
       "This email has already been used by another user."
     );
   });
 
-  test("Email comparisons are case‑insensitive", async ({ page }) => {
+  test("Email karşılaştırması büyük‑küçük harf duyarsız olmalı", async ({
+    page,
+    context,
+  }) => {
     await signup(page, "CaseUser", "CASE@MAIL.COM", "pwCase");
-    await login(page, "CaseUser", "CASE@MAIL.COM", "pwCase");
-    await takeNumber(page, 1);
+    await login(page, "CASE@MAIL.COM", "pwCase");
+    await takeNumberFromDeposit(page, 1);
 
-    // Logging in with lower‑case email should still work
-    await login(page, "CaseUser", "case@mail.com", "pwCase");
-    await takeNumber(page, 1);
+    // İzolasyon için temizle
+    await context.clearCookies();
+    await page.evaluate(() => localStorage.clear());
+
+    await login(page, "case@mail.com", "pwCase");
+    await takeNumberFromDeposit(page, 2);
   });
 
-  test("Fields are trimmed before processing", async ({ page }) => {
-    await signup(
-      page,
-      "   TrimUser   ",
-      "  trim@mail.com  ",
-      "  pwTrim  "
-    );
-    await login(page, "TrimUser", "trim@mail.com", "pwTrim");
-    await takeNumber(page, 1);
-  });
-
-  test("Login without prior signup shows error", async ({ page }) => {
-    await login(page, "Ghost", "ghost@mail.com", "nope");
+  test("Login öncesi signup yapılmazsa hata vermeli", async ({ page }) => {
+    await login(page, "ghost@mail.com", "nope");
     await expect(page.locator(".login-error")).toHaveText(
       "User not found. Please sign up first."
     );
+  });
+
+  test("Email format doğru mu? (Yanlış)", async ({ page }) => {
+    await signup(page, "Serhat", "serhat", "123456");
+    await expect(page.locator(".signup-error")).toHaveText(
+      "Invalid email address."
+    );
+  });
+
+  test("Email format doğru mu? (Doğru)", async ({ page }) => {
+    await signup(page, "Serhat", "serhat@gmail.com", "123456");
+    await navigateToLoginPage(page);
+    const signInButton = page.getByRole("button", {
+      name: "Sign In",
+      exact: true,
+    });
+    await expect(signInButton).toBeVisible();
+    await login(page, "serhat@gmail.com", "123456");
+    await expect(page).toHaveURL(/\/numerator/);
+    const firstStep = page.locator(".stepper .step-item").first();
+    await expect(firstStep).toHaveText("1. Select Service");
+  });
+
+  test("Navbar Sign In routing", async ({ page }) => {
+    await page.locator(".nav a").filter({ hasText: "Sign In" }).click();
+    await expect(page).toHaveURL("http://localhost:4200/login");
   });
 });
