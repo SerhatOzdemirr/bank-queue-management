@@ -23,16 +23,43 @@ namespace BankNumerator.Api.Controllers
             _config = config;
         }
 
-        [HttpPost("signup")]
+       [HttpPost("signup")]
         public async Task<IActionResult> Signup([FromBody] UserDto dto)
         {
-            if (await _ctx.Users.AnyAsync(u => u.Email == dto.Email.ToLower()))
+            // 1. Tüm alanlar dolu mu?
+            if (string.IsNullOrWhiteSpace(dto.Username) ||
+                string.IsNullOrWhiteSpace(dto.Email) ||
+                string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return BadRequest("All fields are required.");
+            }
+
+                // 2. Email formatı geçerli mi?
+            try
+            {
+                var _ = new System.Net.Mail.MailAddress(dto.Email);
+            }
+            catch
+            {
+                return BadRequest("Invalid email address.");
+            }
+
+            var emailLower = dto.Email.Trim().ToLower();
+            var usernameTrimmed = dto.Username.Trim();
+
+            // 3. Email benzersiz mi?
+            if (await _ctx.Users.AnyAsync(u => u.Email == emailLower))
                 return BadRequest("This email has already been used by another user.");
 
+            // 4. Username benzersiz mi?
+            if (await _ctx.Users.AnyAsync(u => u.Username == usernameTrimmed))
+                return BadRequest("This username has already been used by another user.");
+
+            // 5. Kayıt işlemi
             using var hmac = new HMACSHA512();
             var user = new User {
-                Username = dto.Username,
-                Email = dto.Email.ToLower(),
+                Username     = usernameTrimmed,
+                Email        = emailLower,
                 PasswordHash = hmac.Key,
                 PasswordSalt = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password))
             };
@@ -41,22 +68,36 @@ namespace BankNumerator.Api.Controllers
             await _ctx.SaveChangesAsync();
 
             return Ok(new { user.Id, user.Username, user.Email });
-        }
+            }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
-        {
-            var user = await _ctx.Users.SingleOrDefaultAsync(u => u.Email == dto.Email.ToLower());
-            if (user == null) return Unauthorized("User not found. Please sign up first.");
 
-            using var hmac = new HMACSHA512(user.PasswordHash);
-            var computed = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
-            if (!computed.SequenceEqual(user.PasswordSalt))
-                return Unauthorized("User not found. Please sign up first.");
+            [HttpPost("login")]
+            public async Task<IActionResult> Login([FromBody] LoginDto dto)
+            {
+                // 1. Alanlar dolu mu?
+                if (string.IsNullOrWhiteSpace(dto.Email) ||
+                    string.IsNullOrWhiteSpace(dto.Password))
+                {
+                    return BadRequest("All fields are required.");
+                }
 
-            var token = CreateToken(user);
-            return Ok(new { token });
-        }
+                var emailLower = dto.Email.Trim().ToLower();
+
+                // 2. Kullanıcı var mı?
+                var user = await _ctx.Users.SingleOrDefaultAsync(u => u.Email == emailLower);
+                if (user == null)
+                    return Unauthorized("User not found. Please sign up first.");
+
+                // 3. Şifre kontrolü
+                using var hmac = new HMACSHA512(user.PasswordHash);
+                var computed = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                if (!computed.SequenceEqual(user.PasswordSalt))
+                    return Unauthorized("Incorrect password.");
+
+                // 4. Token oluştur ve dön
+                var token = CreateToken(user);
+                return Ok(new { token });
+            }
 
         private string CreateToken(User user)
         {
