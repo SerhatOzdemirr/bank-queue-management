@@ -7,15 +7,30 @@
       <div class="step-item" [class.active]="step >= 3">3. Result</div>
     </div>
 
-    <!-- Step 1: Hizmet Seçimi -->
+    <!-- Step 1: Service Selection -->
     <div *ngIf="step === 1" class="step-content">
-      <label for="service">Select Service:</label>
-      <select id="service" [(ngModel)]="selectedService">
-        <option *ngFor="let s of services" [value]="s.key">
-          {{ s.label }}
-        </option>
-      </select>
-      <button class="btn-next" (click)="nextStep()">Next</button>
+      <div class="card-grid">
+        <div
+          class="service-card"
+          *ngFor="let s of pagedServices"
+          (click)="selectService(s)"
+        >
+          <h3>{{ s.label }}</h3>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pager" *ngIf="totalPages > 1">
+        <button (click)="prevPage()" [disabled]="page === 1">‹ Prev</button>
+        <ng-container *ngFor="let p of [].constructor(totalPages); index as i">
+          <button (click)="goTo(i + 1)" [class.active]="page === i + 1">
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+        <button (click)="nextPage()" [disabled]="page === totalPages">
+          Next ›
+        </button>
+      </div>
     </div>
 
     <!-- Step 2: Numara Alma -->
@@ -29,7 +44,7 @@
     <!-- Step 3: Sonuç -->
     <div *ngIf="step === 3 && ticket" class="step-content">
       <div class="result">
-        Your Number is: <strong>{{ ticket.number }}</strong>
+        Your Number is: <strong class="taken-number">{{ ticket.number }}</strong>
         <p><strong>Service:</strong> {{ ticket.serviceLabel }}</p>
         <p><strong>Taken At:</strong> {{ ticket.takenAt | date : "short" }}</p>
       </div>
