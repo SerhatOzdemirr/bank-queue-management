@@ -1,3 +1,4 @@
+// Data/BankNumeratorContext.cs
 using Microsoft.EntityFrameworkCore;
 using BankNumerator.Api.Models;
 
@@ -9,8 +10,11 @@ namespace BankNumerator.Api.Data
             : base(options)
         {
         }
+
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<ServiceItem> Services { get; set; } = null!;
+        public DbSet<ServiceCounter> Counters { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -20,8 +24,9 @@ namespace BankNumerator.Api.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            // ServiceItem seed data
             modelBuilder.Entity<ServiceItem>().ToTable("Services");
-             modelBuilder.Entity<ServiceItem>().HasData(
+            modelBuilder.Entity<ServiceItem>().HasData(
                 new ServiceItem { Id = 1, Key = "withdrawal", Label = "Cash Withdrawal",   IsActive = true },
                 new ServiceItem { Id = 2, Key = "deposit",    Label = "Cash Deposit",      IsActive = true },
                 new ServiceItem { Id = 3, Key = "account",    Label = "Open Account",      IsActive = true },
@@ -31,6 +36,11 @@ namespace BankNumerator.Api.Data
                 new ServiceItem { Id = 7, Key = "exchange",   Label = "Currency Exchange", IsActive = true },
                 new ServiceItem { Id = 8, Key = "support",    Label = "Customer Support",  IsActive = true }
             );
+
+            // ServiceCounter table
+            modelBuilder.Entity<ServiceCounter>()
+                .ToTable("Counters")
+                .HasKey(c => c.ServiceKey);
         }
     }
 }

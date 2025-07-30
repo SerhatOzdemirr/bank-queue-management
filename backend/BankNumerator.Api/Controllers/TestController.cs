@@ -1,4 +1,7 @@
+// Controllers/TestController.cs
 using Microsoft.AspNetCore.Mvc;
+using BankNumerator.Api.Data;
+using System.Threading.Tasks;
 
 namespace BankNumerator.Api.Controllers
 {
@@ -7,10 +10,19 @@ namespace BankNumerator.Api.Controllers
     [Route("api/[controller]")]
     public class TestController : ControllerBase
     {
-        [HttpPost("reset")]
-        public IActionResult ResetQueue()
+        private readonly BankNumeratorContext _ctx;
+
+        public TestController(BankNumeratorContext ctx)
         {
-            NumeratorController.ClearCounters();
+            _ctx = ctx;
+        }
+
+        [HttpPost("reset")]
+        public async Task<IActionResult> ResetQueue()
+        {
+            // Tüm servis sayaçlarını temizle
+            _ctx.Counters.RemoveRange(_ctx.Counters);
+            await _ctx.SaveChangesAsync();
             return Ok(new { reset = true });
         }
     }
