@@ -46,6 +46,8 @@ namespace BankNumerator.Api.Controllers
 
             service.Label = updated.Label;
             service.IsActive = updated.IsActive;
+            service.Key       = updated.Key;
+            service.MaxNumber = updated.MaxNumber;
 
             await _ctx.SaveChangesAsync();
             return NoContent();

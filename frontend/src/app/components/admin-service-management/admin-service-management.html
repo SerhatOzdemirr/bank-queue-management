@@ -1,7 +1,8 @@
+<!-- src/app/components/admin-service-management/service-management.component.html -->
 <div class="service-management">
   <header>
     <h3>Service Management</h3>
-    <button class="btn" (click)="openAddService()">+ New Service</button>
+    <button class="btn" (click)="showAddModal()">+ New Service</button>
   </header>
 
   <table class="table">
@@ -18,14 +19,66 @@
       <tr *ngFor="let svc of services">
         <td>{{ svc.key }}</td>
         <td>{{ svc.label }}</td>
-        <td><input type="checkbox" [checked]="svc.isActive" (change)="toggleActive(svc)" /></td>
+        <td>
+          <input
+            type="checkbox"
+            [checked]="svc.isActive"
+            (change)="toggleActive(svc)"
+          />
+        </td>
         <td>{{ svc.maxNumber }}</td>
         <td>
-          <button class="btn-sm" (click)="editService(svc)">Edit</button>
-          <button class="btn-sm danger" (click)="deleteService(svc)">Delete</button>
+          <button class="btn-sm" (click)="showEditModal(svc)">Edit</button>
+          <button class="btn-sm danger" (click)="deleteService(svc)">
+            Delete
+          </button>
           <button class="btn-sm" (click)="setMaxNumber(svc)">Set Max #</button>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <!-- Edit Modal -->
+  <div class="modal-backdrop" *ngIf="editModalVisible">
+    <div class="modal">
+      <h4>Edit Service</h4>
+
+      <label>Key:<br /><input [(ngModel)]="updatedKey" /></label>
+      <label>Label:<br /><input [(ngModel)]="updatedLabel" /></label>
+      <label
+        >Max #:<br /><input type="number" [(ngModel)]="updatedMax"
+      /></label>
+      <div class="checbox-div">
+        <label
+          >Active:<br /><input type="checkbox" [(ngModel)]="updatedActive"
+        /></label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" (click)="saveEdit()">Save</button>
+        <button class="btn danger" (click)="cancelEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Modal -->
+  <div class="modal-backdrop" *ngIf="addModalVisible">
+    <div class="modal">
+      <h4>Add Service</h4>
+
+      <label>Key:<br /><input [(ngModel)]="addedKey" /></label>
+      <label>Label:<br /><input [(ngModel)]="addedLabel" /></label>
+
+      <label>Max #:<br /><input type="number" [(ngModel)]="addedMax" /></label>
+      <div class="checbox-div">
+        <label
+          >Active:<br /><input type="checkbox" [(ngModel)]="addedActive"
+        /></label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" (click)="saveAdd()">Save</button>
+        <button class="btn danger" (click)="cancelAdd()">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
