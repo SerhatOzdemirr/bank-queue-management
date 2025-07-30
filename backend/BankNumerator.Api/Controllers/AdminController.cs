@@ -1,0 +1,84 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using BankNumerator.Api.Data;
+using BankNumerator.Api.Models;
+
+namespace BankNumerator.Api.Controllers
+{
+    [ApiController]
+    [Route("api/admin")]
+    public class AdminController : ControllerBase
+    {
+
+        private readonly BankNumeratorContext _ctx;
+
+        public AdminController(BankNumeratorContext ctx)
+        {
+            _ctx = ctx;
+        }
+        // GET /api/admin/services
+        [HttpGet("services")]
+        public async Task<IActionResult> GetServices()
+        {
+            var list = await _ctx.Services.ToListAsync();
+            return Ok(list);
+        }
+        // POST /api/admin/services
+        [HttpPost("services")]
+        public async Task<IActionResult> AddService([FromBody] ServiceItem service)
+        {
+            if (string.IsNullOrWhiteSpace(service.Key) || string.IsNullOrWhiteSpace(service.Label))
+            {
+                return BadRequest("Key and Label are required");
+            }
+            _ctx.Services.Add(service);
+            await _ctx.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetServices), new { key = service.Key }, service);
+        }
+        // PUT /api/admin/service/{id}
+        [HttpPut("services/{id}")]
+        public async Task<IActionResult> UpdateService(int id, [FromBody] ServiceItem updated)
+        {
+            var service = await _ctx.Services.FindAsync(id);
+            if (service == null) return NotFound();
+
+            service.Label = updated.Label;
+            service.IsActive = updated.IsActive;
+
+            await _ctx.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // DELETE /api/admin/service/{id}
+        [HttpDelete("services/{id}")]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            var service = await _ctx.Services.FindAsync(id);
+            if (service == null) return NotFound();
+            _ctx.Services.Remove(service);
+            await _ctx.SaveChangesAsync();
+            return NoContent();
+        }
+        // GET /api/admin/tickets
+        [HttpGet("tickets")]
+        public async Task<IActionResult> GetAllTickets([FromQuery] string? serviceKey)
+        {
+            var query = _ctx.Tickets.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(serviceKey))
+                query = query.Where(t => t.ServiceKey == serviceKey);
+
+            var tickets = await query
+                .OrderByDescending(t => t.TakenAt)
+                .ToListAsync();
+
+            return Ok(tickets);
+        }
+
+    }
+}

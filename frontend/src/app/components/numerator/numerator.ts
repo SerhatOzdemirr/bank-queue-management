@@ -1,16 +1,10 @@
+// src/app/components/numerator/numerator.ts
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { QueueService } from "../../services/queue.service";
 import { ServicesService } from "../../services/bank.services";
 import { ServiceItem } from "../../services/service-item";
-
-interface Ticket {
-  number: number;
-  serviceKey: string;
-  serviceLabel: string;
-  takenAt: Date;
-}
 
 @Component({
   standalone: true,
@@ -22,14 +16,14 @@ interface Ticket {
 export class Numerator implements OnInit {
   /* ----- adım kontrolü ----- */
   step = 1;
-  firstStep() {
+  firstStep(): void {
     this.step = 1;
     this.ticket = null;
   }
-  nextStep() {
+  nextStep(): void {
     if (this.step < 3) this.step++;
   }
-  prevStep() {
+  prevStep(): void {
     if (this.step > 1) this.step--;
   }
 
@@ -38,30 +32,36 @@ export class Numerator implements OnInit {
   selectedService = "";
   page = 1;
   pageSize = 3;
-  get pagedServices() {
+  get pagedServices(): ServiceItem[] {
     const start = (this.page - 1) * this.pageSize;
     return this.services.slice(start, start + this.pageSize);
   }
-  get totalPages() {
+  get totalPages(): number {
     return Math.ceil(this.services.length / this.pageSize);
   }
-  goTo(p: number) {
+  goTo(p: number): void {
     this.page = p;
   }
-  prevPage() {
+  prevPageNav(): void {
     if (this.page > 1) this.page--;
   }
-  nextPage() {
+  nextPageNav(): void {
     if (this.page < this.totalPages) this.page++;
   }
 
-  /* ----- bilet ----- */
-  ticket: Ticket | null = null;
+  ticket:
+    | {
+        number: number;
+        serviceKey: string;
+        serviceLabel: string;
+        takenAt: Date;
+      }
+    | null = null;
 
   private queue = inject(QueueService);
   private svcApi = inject(ServicesService);
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.svcApi.getAll().subscribe({
       next: (list) => {
         this.services = list;
@@ -71,20 +71,19 @@ export class Numerator implements OnInit {
     });
   }
 
-  selectService(item: ServiceItem) {
+  selectService(item: ServiceItem): void {
     this.selectedService = item.key;
     this.nextStep();
   }
 
-  assignNumber() {
+  assignNumber(): void {
     this.queue.getNext(this.selectedService).subscribe({
-      next: (res) => {
-        const svc = this.services.find((s) => s.key === this.selectedService)!;
+      next: (res: any) => {
         this.ticket = {
           number: res.number,
-          serviceKey: svc.key,
-          serviceLabel: svc.label,
-          takenAt: new Date(),
+          serviceKey: res.serviceKey,
+          serviceLabel: res.serviceLabel,
+          takenAt: new Date(res.takenAt),
         };
         this.step = 3;
       },
