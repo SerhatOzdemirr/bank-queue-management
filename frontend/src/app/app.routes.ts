@@ -1,6 +1,8 @@
-// app.routes.ts
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard, authMatchGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
+
 export const routes: Routes = [
   { path: '', redirectTo: 'signup', pathMatch: 'full' },
   {
@@ -16,6 +18,13 @@ export const routes: Routes = [
     canActivate: [authGuard],
     canMatch: [authMatchGuard],
     loadComponent: () => import('./components/numerator/numerator').then(m => m.Numerator)
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard, adminGuard],
+    canMatch: [authMatchGuard],
+    loadComponent: () => import('./components/admin-dashboard/admin-dashboard')
+      .then(m => m.AdminDashboard)
   },
   { path: '**', redirectTo: 'signup' }
 ];

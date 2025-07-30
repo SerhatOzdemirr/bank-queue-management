@@ -23,6 +23,10 @@ namespace BankNumerator.Api.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+            // Role sütunu için varsayılan değer
+            modelBuilder.Entity<User>()
+                .Property(u => u.Role)
+                .HasDefaultValue(User.UserRole.Default);
 
             // ServiceItem seed data
             modelBuilder.Entity<ServiceItem>().ToTable("Services");
@@ -41,24 +45,26 @@ namespace BankNumerator.Api.Data
             modelBuilder.Entity<ServiceCounter>()
                 .ToTable("Counters")
                 .HasKey(c => c.ServiceKey);
-                
-             modelBuilder.Entity<Ticket>(builder =>
-            {
-                builder.ToTable("Tickets");
 
-                // Composite PK: ServiceKey + Number
-                builder.HasKey(t => new { t.ServiceKey, t.Number });
+            modelBuilder.Entity<Ticket>(builder =>
+           {
+               builder.ToTable("Tickets");
 
-                builder.Property(t => t.ServiceKey)
-                       .HasMaxLength(100)
-                       .IsRequired();
+               // Composite PK: ServiceKey + Number
+               builder.HasKey(t => new { t.ServiceKey, t.Number });
 
-                builder.Property(t => t.ServiceLabel)
-                       .IsRequired();
+               builder.Property(t => t.ServiceKey)
+                      .HasMaxLength(100)
+                      .IsRequired();
 
-                builder.Property(t => t.TakenAt)
-                       .IsRequired();
-            });
+               builder.Property(t => t.ServiceLabel)
+                      .IsRequired();
+
+               builder.Property(t => t.TakenAt)
+                      .IsRequired();
+           });
+            
+
         }
     }
 }

@@ -30,7 +30,13 @@ export class Login {
       email: this.email.trim().toLowerCase(),
       password: this.password
     }).subscribe({
-      next: () => this.router.navigate(['/numerator']),
+      next: () => {
+        if (this.auth.isAdmin()) {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/numerator']);
+        }
+      },
       error: err => this.error = err.error || 'Login failed.'
     });
   }

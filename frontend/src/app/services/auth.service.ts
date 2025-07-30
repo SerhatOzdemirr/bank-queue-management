@@ -1,45 +1,65 @@
 // src/app/services/auth.service.ts
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { environment } from "../../environment";
-import { tap } from "rxjs/operators";
-import { Observable } from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { environment } from '../../environment';
 
-interface SignupDto {
-  username: string;
-  email: string;
-  password: string;
-}
-interface LoginDto {
-  email: string;
-  password: string;
-}
-
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private base = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
-  signup(dto: SignupDto): Observable<any> {
+  signup(dto: { username: string; email: string; password: string; }) {
     return this.http.post(`${this.base}/signup`, dto);
   }
 
-  login(dto: LoginDto) {
+  signupAdmin(dto: { username: string; email: string; password: string; }) {
+    return this.http.post(`${this.base}/signup-admin`, dto);
+  }
+
+  login(dto: { email: string; password: string; }) {
     return this.http.post<{ token: string }>(`${this.base}/login`, dto).pipe(
-      tap((res) => localStorage.setItem("token", res.token)) // token saklama
+      tap(res => {
+        localStorage.setItem('token', res.token);
+      })
     );
   }
 
-  logout() {
-    localStorage.removeItem("token");
+  /** interceptor için */
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
-  getToken(): string | null {
-    return localStorage.getItem("token");
+  /** token içinden role’u oku */
+  getRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // bazen "role" bazen uzun URI altında olabilir
+      return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+          || payload['role']
+          || null;
+    } catch {
+      return null;
+    }
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem("token");
+    return !!this.getToken();
+  }
+
+  isAdmin(): boolean {
+    return this.getRole() === 'Admin';
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 }
