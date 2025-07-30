@@ -29,19 +29,19 @@ namespace BankNumerator.Api.Controllers
             return NoContent();
         }
 
-       [HttpGet("next")]
+        [HttpGet("next")]
         public async Task<IActionResult> GetNext([FromQuery] string service)
         {
-            var svc = await _ctx.Services
-                .Where(s => s.Key == service && s.IsActive)
-                .FirstOrDefaultAsync();
+            var counter = await _ctx.Counters
+                .SingleOrDefaultAsync(c => c.ServiceKey == service);
 
-            if (svc == null) return NotFound("Service not found");
-
-            var counter = await _ctx.Counters.FindAsync(service);
             if (counter == null)
             {
-                counter = new ServiceCounter { ServiceKey = service, CurrentNumber = 1 };
+                counter = new ServiceCounter
+                {
+                    ServiceKey = service,
+                    CurrentNumber = 1
+                };
                 _ctx.Counters.Add(counter);
             }
             else
@@ -50,17 +50,9 @@ namespace BankNumerator.Api.Controllers
                 _ctx.Counters.Update(counter);
             }
 
-            var ticket = new Ticket
-            {
-                Number = counter.CurrentNumber,
-                ServiceKey = svc.Key,
-                ServiceLabel = svc.Label,
-                TakenAt = DateTime.UtcNow
-            };
-            _ctx.Tickets.Add(ticket);
             await _ctx.SaveChangesAsync();
-            return Ok(ticket);
-        }
 
+            return Ok(new { number = counter.CurrentNumber });
+        }
     }
 }

@@ -1,10 +1,16 @@
-// src/app/components/numerator/numerator.ts
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { QueueService } from "../../services/queue.service";
 import { ServicesService } from "../../services/bank.services";
 import { ServiceItem } from "../../services/service-item";
+
+interface Ticket {
+  number: number;
+  serviceKey: string;
+  serviceLabel: string;
+  takenAt: Date;
+}
 
 @Component({
   standalone: true,
@@ -16,14 +22,14 @@ import { ServiceItem } from "../../services/service-item";
 export class Numerator implements OnInit {
   /* ----- adım kontrolü ----- */
   step = 1;
-  firstStep(): void {
+  firstStep() {
     this.step = 1;
     this.ticket = null;
   }
-  nextStep(): void {
+  nextStep() {
     if (this.step < 3) this.step++;
   }
-  prevStep(): void {
+  prevStep() {
     if (this.step > 1) this.step--;
   }
 
@@ -32,36 +38,30 @@ export class Numerator implements OnInit {
   selectedService = "";
   page = 1;
   pageSize = 3;
-  get pagedServices(): ServiceItem[] {
+  get pagedServices() {
     const start = (this.page - 1) * this.pageSize;
     return this.services.slice(start, start + this.pageSize);
   }
-  get totalPages(): number {
+  get totalPages() {
     return Math.ceil(this.services.length / this.pageSize);
   }
-  goTo(p: number): void {
+  goTo(p: number) {
     this.page = p;
   }
-  prevPageNav(): void {
+  prevPage() {
     if (this.page > 1) this.page--;
   }
-  nextPageNav(): void {
+  nextPage() {
     if (this.page < this.totalPages) this.page++;
   }
 
-  ticket:
-    | {
-        number: number;
-        serviceKey: string;
-        serviceLabel: string;
-        takenAt: Date;
-      }
-    | null = null;
+  /* ----- bilet ----- */
+  ticket: Ticket | null = null;
 
   private queue = inject(QueueService);
   private svcApi = inject(ServicesService);
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.svcApi.getAll().subscribe({
       next: (list) => {
         this.services = list;
@@ -71,19 +71,20 @@ export class Numerator implements OnInit {
     });
   }
 
-  selectService(item: ServiceItem): void {
+  selectService(item: ServiceItem) {
     this.selectedService = item.key;
     this.nextStep();
   }
 
-  assignNumber(): void {
+  assignNumber() {
     this.queue.getNext(this.selectedService).subscribe({
-      next: (res: any) => {
+      next: (res) => {
+        const svc = this.services.find((s) => s.key === this.selectedService)!;
         this.ticket = {
           number: res.number,
-          serviceKey: res.serviceKey,
-          serviceLabel: res.serviceLabel,
-          takenAt: new Date(res.takenAt),
+          serviceKey: svc.key,
+          serviceLabel: svc.label,
+          takenAt: new Date(),
         };
         this.step = 3;
       },
