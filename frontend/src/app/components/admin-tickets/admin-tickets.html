@@ -1,0 +1,46 @@
+<div class="admin-tickets">
+  <h2>Servis Bazlı Numara Yönetimi</h2>
+
+  <label for="svcSelect">Servis:</label>
+  <select id="svcSelect"
+          (change)="onServiceChange($any($event.target).value)">
+    <option value="">— Tümü —</option>
+    <option *ngFor="let s of services" [value]="s.key">
+      {{ s.key }} — {{ s.label }}
+    </option>
+  </select>
+
+  <button (click)="loadTickets()" [disabled]="loading">
+    Refresh
+  </button>
+
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="!loading && tickets.length === 0">
+    Gösterilecek bilet yok.
+  </div>
+
+  <table *ngIf="tickets.length > 0" class="table">
+    <thead>
+      <tr>
+        <th>Servis</th>
+        <th>Numara</th>
+        <th>Alınma Zamanı</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of tickets">
+        <td>{{ t.serviceKey }}</td>
+        <td>{{ t.number }}</td>
+        <td>{{ t.takenAt | date:'short' }}</td>
+        <td>
+          <button
+            (click)="cancel(t)"
+            [disabled]="canceling[ t.serviceKey + '_' + t.number ]">
+            İptal
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

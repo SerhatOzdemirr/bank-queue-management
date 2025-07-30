@@ -7,4 +7,13 @@ namespace BankNumerator.Api.Models
         public required string ServiceLabel { get; set; }
         public DateTime TakenAt { get; set; }
     }
+
+     public class TicketDto
+    {
+        public string ServiceKey   { get; set; } = default!;
+        public string ServiceLabel { get; set; } = default!;
+        public int    Number       { get; set; }
+        public DateTime TakenAt    { get; set; }
+        // eğer status gerekirse: public string Status { get; set; }
+    }
 }

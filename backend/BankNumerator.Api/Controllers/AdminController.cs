@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BankNumerator.Api.Data;
 using BankNumerator.Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq; // OrderByDescending için gerekli
 
 namespace BankNumerator.Api.Controllers
 {
@@ -11,13 +12,13 @@ namespace BankNumerator.Api.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-
         private readonly BankNumeratorContext _ctx;
 
         public AdminController(BankNumeratorContext ctx)
         {
             _ctx = ctx;
         }
+
         // GET /api/admin/services
         [HttpGet("services")]
         public async Task<IActionResult> GetServices()
@@ -25,6 +26,7 @@ namespace BankNumerator.Api.Controllers
             var list = await _ctx.Services.ToListAsync();
             return Ok(list);
         }
+
         // POST /api/admin/services
         [HttpPost("services")]
         public async Task<IActionResult> AddService([FromBody] ServiceItem service)
@@ -37,6 +39,7 @@ namespace BankNumerator.Api.Controllers
             await _ctx.SaveChangesAsync();
             return CreatedAtAction(nameof(GetServices), new { key = service.Key }, service);
         }
+
         // PUT /api/admin/service/{id}
         [HttpPut("services/{id}")]
         public async Task<IActionResult> UpdateService(int id, [FromBody] ServiceItem updated)
@@ -63,21 +66,35 @@ namespace BankNumerator.Api.Controllers
             await _ctx.SaveChangesAsync();
             return NoContent();
         }
+
         // GET /api/admin/tickets
         [HttpGet("tickets")]
         public async Task<IActionResult> GetAllTickets([FromQuery] string? serviceKey)
         {
-            var query = _ctx.Tickets.AsQueryable();
+            var query = _ctx.Tickets.AsNoTracking().AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(serviceKey))
                 query = query.Where(t => t.ServiceKey == serviceKey);
 
+            // TicketDto'nun ServiceLabel'ını doldurmak için User ve Service bilgilerini join'leyelim
             var tickets = await query
                 .OrderByDescending(t => t.TakenAt)
+                .Select(t => new TicketDto
+                {
+                    ServiceKey   = t.ServiceKey,
+                    // ServiceLabel'ı doğrudan Ticket modelinden alıyoruz,
+                    // çünkü Ticket modelinde bu alanın zaten olması bekleniyor.
+                    // Eğer Ticket oluşturulurken bu alan set edilmiyorsa,
+                    // aşağıdaki öneriye bakınız.
+                    ServiceLabel = t.ServiceLabel,
+                    Number       = t.Number,
+                    TakenAt      = t.TakenAt
+                })
                 .ToListAsync();
 
             return Ok(tickets);
         }
+
         // DELETE /api/admin/tickets/{serviceKey}/{number}
         [HttpDelete("tickets/{serviceKey}/{number}")]
         public async Task<IActionResult> CancelTicket(string serviceKey, int number)
@@ -93,6 +110,6 @@ namespace BankNumerator.Api.Controllers
 
             return NoContent();
         }
-
     }
 }
+

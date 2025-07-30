@@ -41,9 +41,18 @@ export const routes: Routes = [
       {
         path: "services",
         loadComponent: () =>
-          import("./components/admin-service-management/admin-service-management")
-            .then((m) => m.ServiceManagementComponent),
+          import(
+            "./components/admin-service-management/admin-service-management"
+          ).then((m) => m.ServiceManagementComponent),
       },
+      {
+        path: "tickets",
+        loadComponent: () =>
+          import("./components/admin-tickets/admin-tickets").then(
+            (m) => m.AdminTickets
+          ),
+      },
+
       {
         path: "create",
         loadComponent: () =>

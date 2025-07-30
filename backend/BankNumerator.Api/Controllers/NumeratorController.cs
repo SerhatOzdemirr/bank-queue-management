@@ -28,31 +28,54 @@ namespace BankNumerator.Api.Controllers
             await _ctx.SaveChangesAsync();
             return NoContent();
         }
-
-        [HttpGet("next")]
-        public async Task<IActionResult> GetNext([FromQuery] string service)
-        {
-            var counter = await _ctx.Counters
-                .SingleOrDefaultAsync(c => c.ServiceKey == service);
-
-            if (counter == null)
+            [HttpGet("next")]
+            public async Task<IActionResult> GetNext([FromQuery] string service)
             {
-                counter = new ServiceCounter
+                // Sayaç işlemi
+                var counter = await _ctx.Counters
+                    .SingleOrDefaultAsync(c => c.ServiceKey == service);
+
+                if (counter == null)
                 {
-                    ServiceKey = service,
-                    CurrentNumber = 1
+                    counter = new ServiceCounter { ServiceKey = service, CurrentNumber = 1 };
+                    _ctx.Counters.Add(counter);
+                }
+                else
+                {
+                    counter.CurrentNumber++;
+                    _ctx.Counters.Update(counter);
+                }
+
+                // ServiceLabel almak için ServiceItem’a bak
+                var svc = await _ctx.Services
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(s => s.Key == service);
+                if (svc == null || !svc.IsActive)
+                    return BadRequest("Servis bulunamadı veya aktif değil");
+
+                // Yeni Ticket oluştur ve ekle
+                var ticket = new Ticket
+                {
+                    Number       = counter.CurrentNumber,
+                    ServiceKey   = svc.Key,
+                    ServiceLabel = svc.Label,
+                    TakenAt      = DateTime.UtcNow
                 };
-                _ctx.Counters.Add(counter);
-            }
-            else
-            {
-                counter.CurrentNumber++;
-                _ctx.Counters.Update(counter);
+                _ctx.Tickets.Add(ticket);
+
+                // Tüm değişiklikleri kaydet
+                await _ctx.SaveChangesAsync();
+
+                // DTO ile geri dön
+                var dto = new TicketDto
+                {
+                    Number       = ticket.Number,
+                    ServiceKey   = ticket.ServiceKey,
+                    ServiceLabel = ticket.ServiceLabel,
+                    TakenAt      = ticket.TakenAt
+                };
+                return Ok(dto);
             }
 
-            await _ctx.SaveChangesAsync();
-
-            return Ok(new { number = counter.CurrentNumber });
-        }
     }
 }
