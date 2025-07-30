@@ -30,6 +30,9 @@ namespace BankNumerator.Api.Data
 
             // ServiceItem seed data
             modelBuilder.Entity<ServiceItem>().ToTable("Services");
+            modelBuilder.Entity<ServiceItem>()
+                .Property(s => s.MaxNumber)
+                .HasDefaultValue(100);
             modelBuilder.Entity<ServiceItem>().HasData(
                 new ServiceItem { Id = 1, Key = "withdrawal", Label = "Cash Withdrawal", IsActive = true },
                 new ServiceItem { Id = 2, Key = "deposit", Label = "Cash Deposit", IsActive = true },
@@ -63,7 +66,7 @@ namespace BankNumerator.Api.Data
                builder.Property(t => t.TakenAt)
                       .IsRequired();
            });
-            
+          
 
         }
     }

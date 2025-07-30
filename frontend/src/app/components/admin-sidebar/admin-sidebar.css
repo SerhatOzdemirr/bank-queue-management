@@ -1,0 +1,22 @@
+.sidebar-admin {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  height: 90vh;
+  margin-top: 0 !important;
+}
+.sidebar-links {
+  display: flex;
+  height: 90vh;
+  flex-direction: column;
+  justify-content: space-around;
+  list-style-type: none;
+}
+.sidebar-links a {
+  text-decoration: none;
+  color: var(--text-color);
+  border: 1px solid var(--bg-root);
+  padding: 8px;
+  width: 140px;
+  display: block;
+  border-radius: 2px;
+}

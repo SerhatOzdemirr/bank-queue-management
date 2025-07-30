@@ -1,0 +1,69 @@
+.admin-signup-outer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--bg-root);
+}
+.admin-signup-container {
+  display: flex;
+  background-color: var(--bg-root);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 17px;
+  height: 60vh;
+  width: 30%;
+  border: 1px solid var(--text-color);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+.admin-signup-container h2 {
+  background-color: var(--tertiary-color);
+  color: var(--bg-root) !important;
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  width: 90%;
+}
+.admin-signup-container input {
+  width: 90%;
+  padding: 8px;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid var(--tertiary-color);
+  transition: all 0.1s ease;
+  border-radius: 12px;
+  height: 25px;
+}
+.admin-signup-container input:focus {
+  border-left: 2px solid var(--tertiary-color);
+  border-right: 2px solid var(--tertiary-color);
+  border-bottom: 2px solid var(--tertiary-color);
+  border-top: none;
+}
+.admin-signup-container button {
+  background-color: var(--tertiary-color);
+  border: none;
+  padding: 12px;
+  width: 92%;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.1s ease-in;
+}
+.admin-signup-container button:hover{
+    background-color: var(--secondary-color);
+    color: var(--bg-root);
+}
+.error {
+  color: red;
+  margin-top: 1rem;
+  text-align: center;
+}
+.success {
+  color: green;
+  margin-top: 1rem;
+  text-align: center;
+}

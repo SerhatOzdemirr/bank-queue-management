@@ -1,0 +1,31 @@
+<div class="service-management">
+  <header>
+    <h3>Service Management</h3>
+    <button class="btn" (click)="openAddService()">+ New Service</button>
+  </header>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Label</th>
+        <th>Active</th>
+        <th>Max #</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let svc of services">
+        <td>{{ svc.key }}</td>
+        <td>{{ svc.label }}</td>
+        <td><input type="checkbox" [checked]="svc.isActive" (change)="toggleActive(svc)" /></td>
+        <td>{{ svc.maxNumber }}</td>
+        <td>
+          <button class="btn-sm" (click)="editService(svc)">Edit</button>
+          <button class="btn-sm danger" (click)="deleteService(svc)">Delete</button>
+          <button class="btn-sm" (click)="setMaxNumber(svc)">Set Max #</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

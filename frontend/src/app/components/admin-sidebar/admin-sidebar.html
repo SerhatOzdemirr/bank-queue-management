@@ -1,0 +1,36 @@
+<!-- src/app/components/admin-sidebar/admin-sidebar.component.html -->
+<div class="sidebar-admin">
+  <ul class="sidebar-links">
+    <li>
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        >Dashboard</a
+      >
+    </li>
+    <li>
+      <a
+        routerLink="/admin/services"
+        routerLinkActive="active"
+        >Service Management</a
+      >
+    </li>
+    <li>
+      <a
+        routerLink="/admin/tickets"
+        routerLinkActive="active"
+        >Ticket Oversight</a
+      >
+    </li>
+    <li>
+      <a
+        routerLink="/admin/settings"
+        routerLinkActive="active"
+        >Settings</a
+      >
+    </li>
+    <li>
+      <a (click)="logout()">Logout</a>
+    </li>
+  </ul>
+</div>

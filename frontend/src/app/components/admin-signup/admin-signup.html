@@ -1,0 +1,15 @@
+<!-- src/app/components/admin-signup/admin-signup.html -->
+<div class="admin-signup-outer">
+  <div class="admin-signup-container">
+    <h2 class="admin-title">Create Admin User</h2>
+
+    <input [(ngModel)]="username" placeholder="Username" />
+    <input [(ngModel)]="email"    placeholder="Email" />
+    <input [(ngModel)]="password" placeholder="Password" type="password" />
+
+    <button (click)="createAdmin()">Create Admin</button>
+
+    <p *ngIf="error"   class="error">{{ error }}</p>
+    <p *ngIf="success" class="success">{{ success }}</p>
+  </div>
+</div>
