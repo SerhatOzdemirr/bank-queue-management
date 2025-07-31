@@ -72,7 +72,6 @@ namespace BankNumerator.Api.Controllers
         public async Task<IActionResult> GetAllTickets([FromQuery] string? serviceKey)
         {
             var query = _ctx.Tickets.AsNoTracking().AsQueryable();
-
             if (!string.IsNullOrWhiteSpace(serviceKey))
                 query = query.Where(t => t.ServiceKey == serviceKey);
 
@@ -80,10 +79,12 @@ namespace BankNumerator.Api.Controllers
                 .OrderByDescending(t => t.TakenAt)
                 .Select(t => new TicketDto
                 {
+                    Number       = t.Number,
                     ServiceKey   = t.ServiceKey,
                     ServiceLabel = t.ServiceLabel,
-                    Number       = t.Number,
-                    TakenAt      = t.TakenAt
+                    TakenAt      = t.TakenAt,
+                    UserId       = t.UserId,
+                    Username     = t.User.Username
                 })
                 .ToListAsync();
 

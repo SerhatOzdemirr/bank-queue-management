@@ -50,23 +50,38 @@ namespace BankNumerator.Api.Data
                 .HasKey(c => c.ServiceKey);
 
             modelBuilder.Entity<Ticket>(builder =>
-           {
-               builder.ToTable("Tickets");
+    {
+        // Tablo adı
+        builder.ToTable("Tickets");
 
-               // Composite PK: ServiceKey + Number
-               builder.HasKey(t => new { t.ServiceKey, t.Number });
+        // 1) Id sütununu PK ve identity yap
+        builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id)
+               .UseIdentityByDefaultColumn(); // PostgreSQL için identity
 
-               builder.Property(t => t.ServiceKey)
-                      .HasMaxLength(100)
-                      .IsRequired();
+        // 2) Diğer alanlar
+        builder.Property(t => t.Number)
+               .IsRequired();
 
-               builder.Property(t => t.ServiceLabel)
-                      .IsRequired();
+        builder.Property(t => t.ServiceKey)
+               .HasMaxLength(100)
+               .IsRequired();
 
-               builder.Property(t => t.TakenAt)
-                      .IsRequired();
-           });
-          
+        builder.Property(t => t.ServiceLabel)
+               .IsRequired();
+
+        builder.Property(t => t.TakenAt)
+               .IsRequired();
+
+        builder.Property(t => t.UserId)
+               .IsRequired();
+
+        // 3) User ilişkisi (FK)
+        builder.HasOne(t => t.User)
+               .WithMany()                   // eğer User’ın Ticket koleksiyonu yoksa
+               .HasForeignKey(t => t.UserId)
+               .OnDelete(DeleteBehavior.Cascade);
+    });
 
         }
     }
