@@ -1,0 +1,122 @@
+.admin-tickets {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: var(--secondary-color);
+}
+
+.admin-tickets h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-align: center;
+  color: var(--text-color);
+}
+
+/* Kontrollerin hizalanması */
+.admin-tickets label,
+.admin-tickets select
+{
+  margin-bottom: 1rem;
+  vertical-align: middle;
+  color: var(--text-color);
+
+}
+.admin-tickets select{
+  width: 350px;
+  outline: none;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  color: var(--tertiary-color);
+
+}
+.admin-tickets select option {
+  background-color: var(--tertiary-color);
+  cursor: pointer;
+  color: var(--text-color);
+}
+.label-select{
+  display: flex;
+  height: 40px;
+  gap: 2rem;
+}
+.label-select-btn{
+  display: flex;
+  justify-content: space-between;
+  height: 40px;
+}
+.admin-tickets button {
+  background-color: var(--tertiary-color);
+  color: var(--text-color);
+  border-radius: 5px;
+  border: none;
+  outline: none;
+}
+/* Select genişliği mobilde tam */
+.admin-tickets select {
+  min-width: 150px;
+}
+
+.admin-tickets .table-wrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+/* Tablo stil */
+.admin-tickets table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; 
+  scrollbar-color: var(--tertiary-color) !important;
+
+}
+
+
+.admin-tickets td {
+  padding: 0.5rem;
+  border: 1px solid var(--text-color);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-color);
+
+}
+.admin-tickets th{
+  background-color: var(--primary-color);
+  padding: 0.5rem;
+   border: 1px solid var(--text-color);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-color);
+}
+/* Action butonu */
+.admin-tickets button {
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+/* Loading ve boş mesaj */
+.admin-tickets div[ng-reflect-ng-if] {
+  margin-top: 1rem;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Responsive ayarları */
+@media (max-width: 768px) {
+  .admin-tickets label,
+  .admin-tickets select,
+  .admin-tickets button {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .admin-tickets select {
+    margin-top: 0.5rem;
+  }
+
+  .admin-tickets button {
+    margin-top: 0.5rem;
+  }
+}

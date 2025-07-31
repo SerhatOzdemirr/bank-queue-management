@@ -76,16 +76,11 @@ namespace BankNumerator.Api.Controllers
             if (!string.IsNullOrWhiteSpace(serviceKey))
                 query = query.Where(t => t.ServiceKey == serviceKey);
 
-            // TicketDto'nun ServiceLabel'ını doldurmak için User ve Service bilgilerini join'leyelim
             var tickets = await query
                 .OrderByDescending(t => t.TakenAt)
                 .Select(t => new TicketDto
                 {
                     ServiceKey   = t.ServiceKey,
-                    // ServiceLabel'ı doğrudan Ticket modelinden alıyoruz,
-                    // çünkü Ticket modelinde bu alanın zaten olması bekleniyor.
-                    // Eğer Ticket oluşturulurken bu alan set edilmiyorsa,
-                    // aşağıdaki öneriye bakınız.
                     ServiceLabel = t.ServiceLabel,
                     Number       = t.Number,
                     TakenAt      = t.TakenAt

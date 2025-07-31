@@ -1,43 +1,47 @@
 <div class="admin-tickets">
-  <h2>Servis Bazlı Numara Yönetimi</h2>
+  <h2>Service-Based Ticket Management</h2>
 
-  <label for="svcSelect">Servis:</label>
-  <select id="svcSelect"
-          (change)="onServiceChange($any($event.target).value)">
-    <option value="">— Tümü —</option>
-    <option *ngFor="let s of services" [value]="s.key">
-      {{ s.key }} — {{ s.label }}
-    </option>
-  </select>
-
-  <button (click)="loadTickets()" [disabled]="loading">
-    Refresh
-  </button>
+  <div class="label-select-btn">
+    <div class="label-select">
+      <label for="svcSelect">Service:</label>
+      <select
+        id="svcSelect"
+        (change)="onServiceChange($any($event.target).value)"
+      >
+        <option value="">— All —</option>
+        <option *ngFor="let s of services" [value]="s.key">
+          {{ s.key }} — {{ s.label }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <button (click)="loadTickets()" [disabled]="loading">Refresh</button>
+    </div>
+  </div>
 
   <div *ngIf="loading">Loading...</div>
-  <div *ngIf="!loading && tickets.length === 0">
-    Gösterilecek bilet yok.
-  </div>
+  <div *ngIf="!loading && tickets.length === 0">No tickets to display.</div>
 
   <table *ngIf="tickets.length > 0" class="table">
     <thead>
       <tr>
-        <th>Servis</th>
-        <th>Numara</th>
-        <th>Alınma Zamanı</th>
-        <th>İşlem</th>
+        <th>Service</th>
+        <th>Number</th>
+        <th>Taken At</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let t of tickets">
         <td>{{ t.serviceKey }}</td>
         <td>{{ t.number }}</td>
-        <td>{{ t.takenAt | date:'short' }}</td>
+        <td>{{ t.takenAt | date : "short" }}</td>
         <td>
           <button
             (click)="cancel(t)"
-            [disabled]="canceling[ t.serviceKey + '_' + t.number ]">
-            İptal
+            [disabled]="canceling[t.serviceKey + '_' + t.number]"
+          >
+            Cancel
           </button>
         </td>
       </tr>
