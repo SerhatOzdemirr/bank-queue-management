@@ -1,15 +1,20 @@
 // utils/testSetup.ts
-import { Page, BrowserContext, request, expect ,APIRequestContext } from '@playwright/test';
+import {
+  Page,
+  BrowserContext,
+  expect,
+  APIRequestContext,
+} from "@playwright/test";
 
-const BASE_URL = 'http://localhost:4200';
-const API_URL  = 'http://localhost:5034';
+const BASE_URL = "http://localhost:4200";
+const API_URL = "http://localhost:5034";
 
 export { BASE_URL, API_URL };
 
 export async function initializePageObject<T>(
   page: Page,
   context: BrowserContext,
-  requestContext: APIRequestContext, 
+  requestContext: APIRequestContext,
   PageObjectClass: new (page: Page) => T,
   navigate?: (instance: T) => Promise<void>
 ): Promise<T> {

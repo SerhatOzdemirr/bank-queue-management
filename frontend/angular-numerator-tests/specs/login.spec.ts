@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "../page-objects/login.page";
 import { initializePageObject, BASE_URL } from "../utils/testSetup";
 
-test.describe("Login POM", () => {
+test.describe.serial("Login POM", () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page, context, request }) => {
