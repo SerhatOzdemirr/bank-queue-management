@@ -22,6 +22,7 @@
           <td>{{ svc.label }}</td>
           <td>
             <input
+              class="active-checkbox"
               type="checkbox"
               [checked]="svc.isActive"
               (change)="toggleActive(svc)"
@@ -44,7 +45,7 @@
 
   <!-- Edit Modal -->
   <div class="modal-backdrop" *ngIf="editModalVisible">
-    <div class="modal">
+    <div class="modal" id="edit-modal">
       <h4>Edit Service</h4>
 
       <label>Key:<br /><input [(ngModel)]="updatedKey" /></label>
@@ -67,7 +68,7 @@
 
   <!-- Add Modal -->
   <div class="modal-backdrop" *ngIf="addModalVisible">
-    <div class="modal">
+    <div class="modal" id="add-modal">
       <h4>Add Service</h4>
 
       <label>Key:<br /><input [(ngModel)]="addedKey" /></label>
