@@ -33,3 +33,12 @@ body.theme-dark .login-title
 {
   color: #fff !important;
 }
+
+@media (max-width : 768px) {
+  h2{
+    font-size: 16px !important;
+  }
+  a{
+    font-size: 14px;
+  }
+}
