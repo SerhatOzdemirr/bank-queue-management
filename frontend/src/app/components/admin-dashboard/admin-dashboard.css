@@ -7,8 +7,11 @@
   width: 240px;
 }
 .main-content {
-  flex: 1;
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
   overflow: auto;
   border: 1px solid var(--text-color);
+  height: 90%;
   padding: 5px;
 }

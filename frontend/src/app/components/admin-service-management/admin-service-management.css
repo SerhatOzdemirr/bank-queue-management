@@ -2,7 +2,11 @@
   padding: 1rem;
   background: var(--bg-root);
   color: var(--primary-color);
-  height: 85vh;
+  height: calc(
+    100% - 2rem
+  ); /* Example: 100% of parent's height minus its own padding top/bottom */
+  display: flex;
+  flex-direction: column;
 }
 
 .service-management header {
@@ -29,7 +33,17 @@
   background: var(--secondary-color);
   color: var(--text-color);
 }
+.table-wrapper {
+  flex: 1; /* fill remaining vertical space */
+  overflow-y: auto; /* enable vertical scroll */
+  margin-top: 1rem; /* gap from filter UI */
+}
 
+/* Ensure the table takes full width inside the wrapper */
+.table-wrapper .table {
+  width: 100%;
+  border-collapse: collapse;
+}
 .table th,
 .table td {
   padding: 0.75rem;
@@ -56,7 +70,7 @@
   background: #e74c3c;
   color: #fff;
 }
-.table input[type = "checkbox"]{
+.table input[type="checkbox"] {
   accent-color: var(--tertiary-color);
 }
 /* src/app/components/service-management/service-management.component.css */
@@ -131,10 +145,10 @@
   background: #e74c3c;
   color: #fff;
 }
-.modal .btn{
-  transition: all .1s ease-in;
+.modal .btn {
+  transition: all 0.1s ease-in;
 }
-.modal .btn:hover{
+.modal .btn:hover {
   background-color: var(--text-color);
   color: var(--secondary-color);
 }

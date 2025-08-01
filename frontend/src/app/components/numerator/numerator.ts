@@ -20,6 +20,8 @@ interface Ticket {
   styleUrls: ["./numerator.css"],
 })
 export class Numerator implements OnInit {
+  errorMessage: string | null = null;
+  showError = false;
   /* ----- adım kontrolü ----- */
   step = 1;
   firstStep() {
@@ -75,11 +77,18 @@ export class Numerator implements OnInit {
     this.selectedService = item.key;
     this.nextStep();
   }
+  disabledCard(item: ServiceItem): boolean {
+    return item.currentNumber >= item.maxNumber;
+  }
 
   assignNumber() {
+    this.showError = false;
+    this.errorMessage = null;
+
     this.queue.getNext(this.selectedService).subscribe({
       next: (res) => {
         const svc = this.services.find((s) => s.key === this.selectedService)!;
+        this.showError = false;
         this.ticket = {
           number: res.number,
           serviceKey: svc.key,
@@ -88,7 +97,18 @@ export class Numerator implements OnInit {
         };
         this.step = 3;
       },
-      error: (err) => console.error("Queue error", err),
+      error: (err) => {
+        this.errorMessage =
+          err.status === 400 && typeof err.error === "string"
+            ? err.error
+            : "Unexpected error occured.";
+
+        this.showError = false;
+        setTimeout(() => {
+          this.showError = true;
+          setTimeout(() => (this.showError = false), 3000);
+        }, 0);
+      },
     });
   }
 }

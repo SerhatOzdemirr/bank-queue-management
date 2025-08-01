@@ -227,3 +227,31 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.error-popup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(231, 76, 60, 0.9); /* kırmızımsı */
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+/* 0–0.2s fade in, 2.8–3s fade out */
+@keyframes fadeInOut {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.service-card.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}

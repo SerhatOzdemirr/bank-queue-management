@@ -9,13 +9,19 @@
 
     <!-- Step 1: Service Selection -->
     <div *ngIf="step === 1" class="step-content">
-      <div class="card-grid">
-        <div
-          class="service-card"
-          *ngFor="let s of pagedServices"
-          (click)="selectService(s)"
-        >
-          <h3>{{ s.label }}</h3>
+      <div *ngIf="step === 1" class="step-content">
+        <div class="card-grid">
+          <div
+            class="service-card"
+            *ngFor="let s of pagedServices"
+            [class.disabled]="disabledCard(s)"
+            (click)="selectService(s)"
+          >
+            <h3>{{ s.label }}</h3>
+            <small *ngIf="disabledCard(s)">
+              {{ s.currentNumber }} / {{ s.maxNumber }} — doldu
+            </small>
+          </div>
         </div>
       </div>
 
@@ -35,16 +41,24 @@
 
     <!-- Step 2: Numara Alma -->
     <div *ngIf="step === 2" class="step-content">
-      <button class="take-number-btn" (click)="assignNumber()">
+      <button
+        class="take-number-btn"
+        (click)="assignNumber()"
+        [disabled]="!!errorMessage"
+      >
         Take the Number
       </button>
       <button class="btn-prev" (click)="prevStep()">Back</button>
+    </div>
+    <div class="error-popup" *ngIf="showError && errorMessage">
+      {{ errorMessage }}
     </div>
 
     <!-- Step 3: Sonuç -->
     <div *ngIf="step === 3 && ticket" class="step-content">
       <div class="result">
-        Your Number is: <strong class="taken-number">{{ ticket.number }}</strong>
+        Your Number is:
+        <strong class="taken-number">{{ ticket.number }}</strong>
         <p><strong>Service:</strong> {{ ticket.serviceLabel }}</p>
         <p><strong>Taken At:</strong> {{ ticket.takenAt | date : "short" }}</p>
       </div>

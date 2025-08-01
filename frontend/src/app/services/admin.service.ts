@@ -11,6 +11,8 @@ export interface Ticket {
   serviceKey: string;
   serviceLabel: string;
   takenAt: string;
+  username : string;
+  userId : number;
 }
 
 @Injectable({ providedIn: 'root' })

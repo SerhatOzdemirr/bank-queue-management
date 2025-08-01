@@ -21,7 +21,7 @@ namespace BankNumerator.Api.Controllers
             _logger = logger;
         }
 
-        // Test için: tüm counters tablosunu temizler
+        // For playwright test clear counters
         [HttpPost("clear")]
         public async Task<IActionResult> ClearCounters()
         {
@@ -29,48 +29,32 @@ namespace BankNumerator.Api.Controllers
             await _ctx.SaveChangesAsync();
             return NoContent();
         }
-           // GET api/numerator/next?service={serviceKey}
-        [HttpGet("next")]
+        // GET api/numerator/next?service={serviceKey}
+       [HttpGet("next")]
         public async Task<IActionResult> GetNext([FromQuery] string service)
         {
-            // 1) Log all incoming claims
             foreach (var c in User.Claims)
-            {
                 _logger.LogInformation("CLAIM ▶ {Type} = {Value}", c.Type, c.Value);
-            }
-
-            // 2) Read and parse NameIdentifier
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("Parsed nameid: {IdStr}", idStr);
             if (!int.TryParse(idStr, out var userId) || userId <= 0)
-            {
-                _logger.LogWarning("Invalid or missing userId: {IdStr}", idStr);
                 return Unauthorized("Invalid user");
-            }
-            _logger.LogInformation("Authenticated userId = {UserId}", userId);
-
-            // 3) Counter logic
-            var counter = await _ctx.Counters
-                .SingleOrDefaultAsync(c => c.ServiceKey == service);
-            if (counter == null)
-            {
-                counter = new ServiceCounter { ServiceKey = service, CurrentNumber = 1 };
-                _ctx.Counters.Add(counter);
-            }
-            else
-            {
-                counter.CurrentNumber++;
-                _ctx.Counters.Update(counter);
-            }
-
-            // 4) Ensure service is active
             var svc = await _ctx.Services
                 .AsNoTracking()
                 .SingleOrDefaultAsync(s => s.Key == service);
             if (svc == null || !svc.IsActive)
                 return BadRequest("Service not found or inactive");
-
-            // 5) Create and add new Ticket
+            var counter = await _ctx.Counters
+                .SingleOrDefaultAsync(c => c.ServiceKey == service)
+                ?? new ServiceCounter { ServiceKey = service, CurrentNumber = 0 };
+            // Limit Control
+            if (counter.CurrentNumber >= svc.MaxNumber)
+                return BadRequest("This service reached the maximum number.");
+            counter.CurrentNumber++;
+            if (_ctx.Entry(counter).State == EntityState.Detached)
+                _ctx.Counters.Add(counter);
+            else
+                _ctx.Counters.Update(counter);
+            // Create ticket
             var ticket = new Ticket
             {
                 Number       = counter.CurrentNumber,
@@ -81,10 +65,8 @@ namespace BankNumerator.Api.Controllers
             };
             _ctx.Tickets.Add(ticket);
 
-            // 6) Save changes
             await _ctx.SaveChangesAsync();
 
-            // 7) Return DTO
             var dto = new TicketDto
             {
                 Number       = ticket.Number,
@@ -96,6 +78,5 @@ namespace BankNumerator.Api.Controllers
             };
             return Ok(dto);
         }
-
     }
 }

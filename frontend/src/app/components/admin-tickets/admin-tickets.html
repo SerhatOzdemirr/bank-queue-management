@@ -25,6 +25,7 @@
   <table *ngIf="tickets.length > 0" class="table">
     <thead>
       <tr>
+        <th>Username</th>
         <th>Service</th>
         <th>Number</th>
         <th>Taken At</th>
@@ -33,6 +34,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let t of tickets">
+        <td>{{ t.username }}</td>
         <td>{{ t.serviceKey }}</td>
         <td>{{ t.number }}</td>
         <td>{{ t.takenAt | date : "short" }}</td>

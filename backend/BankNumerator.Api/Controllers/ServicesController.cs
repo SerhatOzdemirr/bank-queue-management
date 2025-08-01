@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BankNumerator.Api.Data;     // BankQueueContext burada
+using BankNumerator.Api.Data;   
 using BankNumerator.Api.Models;    
 
 namespace BankNumerator.Api.Controllers
@@ -12,23 +9,29 @@ namespace BankNumerator.Api.Controllers
     [Route("api/[controller]")]
     public class ServicesController : ControllerBase
     {
-        private readonly BankNumeratorContext _ctx;
-        public ServicesController(BankNumeratorContext ctx)
-        {
-            _ctx = ctx;
-        }
+        private readonly BankNumeratorContext _db;
+        public ServicesController(BankNumeratorContext db) => _db = db;
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServiceDto>>> GetAll()
+        public async Task<ActionResult<List<ServiceDto>>> GetAll()
         {
-            var list = await _ctx.Services
+            var list = await _db.Services
                 .Where(s => s.IsActive)
-                .Select(s => new ServiceDto(s.Key, s.Label))
+                .Select(s => new ServiceDto
+                {
+                    Id            = s.Id,
+                    ServiceKey    = s.Key,
+                    Label         = s.Label,
+                    IsActive      = s.IsActive,
+                    MaxNumber     = s.MaxNumber,
+                    CurrentNumber = _db.Counters
+                        .Where(c => c.ServiceKey == s.Key)
+                        .Select(c => c.CurrentNumber)
+                        .FirstOrDefault()
+                })
                 .ToListAsync();
 
             return Ok(list);
         }
     }
-
-    public record ServiceDto(string Key, string Label);
 }
