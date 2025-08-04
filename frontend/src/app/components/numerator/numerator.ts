@@ -10,6 +10,9 @@ interface Ticket {
   serviceKey: string;
   serviceLabel: string;
   takenAt: Date;
+  assignedAgentId: number;
+  assignedAt: Date;
+  assignmentStatus: "Pending" | "Accepted" | "Rejected";
 }
 
 @Component({
@@ -109,12 +112,14 @@ export class Numerator implements OnInit {
         const svc = this.services.find(
           (s) => s.serviceKey === this.selectedService
         )!;
-        this.showError = false;
         this.ticket = {
           number: res.number,
           serviceKey: svc.serviceKey,
           serviceLabel: svc.label,
-          takenAt: new Date(),
+          takenAt: new Date(res.takenAt),
+          assignedAgentId: res.assignedAgentId,
+          assignedAt: new Date(res.assignedAt),
+          assignmentStatus: res.assignmentStatus,
         };
         this.step = 3;
       },

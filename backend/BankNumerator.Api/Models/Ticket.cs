@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
   namespace BankNumerator.Api.Models
 {
     public class Ticket
@@ -32,9 +33,14 @@ namespace BankNumerator.Api.Models
         public int      UserId            { get; set; }
         public string   Username          { get; set; } = default!;
 
-        // Agent ataması bilgisi
-        public int?     AssignedAgentId   { get; set; }
-        public DateTime? AssignedAt       { get; set; }
-        public string?  AssignmentStatus  { get; set; }
+        // Agent ataması bilgisi  
+        [JsonPropertyName("assignedAgentId")]
+        public int AssignedAgentId { get; set; }
+
+        [JsonPropertyName("assignedAt")]
+        public DateTime AssignedAt      { get; set; }
+
+        [JsonPropertyName("assignmentStatus")]
+        public string   AssignmentStatus { get; set; } = default!;
     }
 }

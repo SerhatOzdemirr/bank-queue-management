@@ -30,54 +30,83 @@ namespace BankNumerator.Api.Controllers
             return NoContent();
         }
         // GET api/numerator/next?service={serviceKey}
-        [HttpGet("next")]
-        public async Task<IActionResult> GetNext([FromQuery] string service)
-        {
-            foreach (var c in User.Claims)
-                _logger.LogInformation("CLAIM ▶ {Type} = {Value}", c.Type, c.Value);
-            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(idStr, out var userId) || userId <= 0)
-                return Unauthorized("Invalid user");
-            var svc = await _ctx.Services
-                .AsNoTracking()
-                .SingleOrDefaultAsync(s => s.Key == service);
-            if (svc == null || !svc.IsActive)
-                return BadRequest("Service not found or inactive");
-            var counter = await _ctx.Counters
-                .SingleOrDefaultAsync(c => c.ServiceKey == service)
-                ?? new ServiceCounter { ServiceKey = service, CurrentNumber = 0 };
-            // Limit Control
-            if (counter.CurrentNumber >= svc.MaxNumber)
-                return BadRequest("This service reached the maximum number.");
-            counter.CurrentNumber++;
-            if (_ctx.Entry(counter).State == EntityState.Detached)
-                _ctx.Counters.Add(counter);
-            else
-                _ctx.Counters.Update(counter);
-            // Create ticket
-            var ticket = new Ticket
-            {
-                Number = counter.CurrentNumber,
-                ServiceKey = svc.Key,
-                ServiceLabel = svc.Label,
-                TakenAt = DateTime.UtcNow,
-                UserId = userId
-            };
-            _ctx.Tickets.Add(ticket);
+        // GET api/numerator/next?service={serviceKey}
+   [HttpGet("next")]
+public async Task<IActionResult> GetNext([FromQuery] string service)
+{
+    // 1) Kullanıcı kimliğini al
+    var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (!int.TryParse(idStr, out var userId) || userId <= 0)
+        return Unauthorized("Invalid user");
 
-            await _ctx.SaveChangesAsync();
+    // 2) Service kontrolü
+    var svc = await _ctx.Services
+        .AsNoTracking()
+        .SingleOrDefaultAsync(s => s.Key == service);
+    if (svc == null || !svc.IsActive)
+        return BadRequest("Service not found or inactive");
 
-            var dto = new TicketDto
-            {
-                Number = ticket.Number,
-                ServiceKey = ticket.ServiceKey,
-                ServiceLabel = ticket.ServiceLabel,
-                TakenAt = ticket.TakenAt,
-                UserId = ticket.UserId,
-                Username = (await _ctx.Users.FindAsync(userId))?.Username ?? ""
-            };
-            return Ok(dto);
-        }
+    // 3) Sayaç güncelle
+    var counter = await _ctx.Counters
+        .SingleOrDefaultAsync(c => c.ServiceKey == service)
+        ?? new ServiceCounter { ServiceKey = service, CurrentNumber = 0 };
+
+    if (counter.CurrentNumber >= svc.MaxNumber)
+        return BadRequest("This service reached the maximum number.");
+
+    counter.CurrentNumber++;
+    if (_ctx.Entry(counter).State == EntityState.Detached)
+        _ctx.Counters.Add(counter);
+    else
+        _ctx.Counters.Update(counter);
+
+    // 4) Ticket oluştur ve kaydet
+    var ticket = new Ticket
+    {
+        Number       = counter.CurrentNumber,
+        ServiceKey   = svc.Key,
+        ServiceLabel = svc.Label,
+        TakenAt      = DateTime.UtcNow,
+        UserId       = userId
+    };
+    _ctx.Tickets.Add(ticket);
+    await _ctx.SaveChangesAsync();    // ticket.Id ve Number tamam
+
+    // 5) AgentSkill tablosundan uygun agent’ı seç
+    var skilled = await _ctx.AgentSkills
+        .Where(sk => sk.ServiceKey == service)
+        .Select(sk => sk.AgentId)
+        .ToListAsync();
+
+    var assignedAgentId = skilled.Any()
+        ? skilled.First()
+        : await _ctx.Agents.Select(a => a.Id).FirstAsync();  // fallback
+
+    // 6) TicketAssignment kaydı oluştur
+    var assignment = new TicketAssignment
+    {
+        TicketId   = ticket.Id,
+        AgentId    = assignedAgentId,
+        AssignedAt = DateTime.UtcNow,
+        Status     = "Pending"
+    };
+    _ctx.TicketAssignments.Add(assignment);
+    await _ctx.SaveChangesAsync();
+
+    // 7) Cevabı döndür (anon tip, mevcut DTO’yu değiştirmiyoruz)
+    return Ok(new 
+    {
+        number            = ticket.Number,
+        serviceKey        = ticket.ServiceKey,
+        serviceLabel      = ticket.ServiceLabel,
+        takenAt           = ticket.TakenAt,
+        userId            = ticket.UserId,
+        username          = (await _ctx.Users.FindAsync(userId))?.Username ?? "",
+        assignedAgentId   = assignment.AgentId,
+        assignedAt        = assignment.AssignedAt,
+        assignmentStatus  = assignment.Status
+    });
+}
 
 
         [HttpDelete("{serviceKey}/{number}")]

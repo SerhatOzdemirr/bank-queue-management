@@ -1,0 +1,37 @@
+<div *ngIf="loading">Yükleniyor…</div>
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<table *ngIf="!loading && tickets.length" class="table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Servis</th>
+      <th>Alındı</th>
+      <th>Atandı</th>
+      <th>Durum</th>
+      <th>İşlem</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let t of tickets; trackBy: trackById">
+      <td>{{ t.number }}</td>
+      <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
+      <td>{{ format(t.takenAt) }}</td>
+      <td>{{ format(t.assignedAt) }}</td>
+      <td>{{ t.status }}</td>
+      <td>
+        <button 
+          *ngIf="t.status === 'Pending'" 
+          (click)="accept(t)">Kabul</button>
+        <button 
+          *ngIf="t.status === 'Pending'" 
+          (click)="reject(t)">Reddet</button>
+        <button 
+          *ngIf="t.status === 'Pending'" 
+          (click)="release(t)">Serbest Bırak</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div *ngIf="!loading && !tickets.length">Bekleyen atamanız yok.</div>

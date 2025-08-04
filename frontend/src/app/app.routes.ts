@@ -2,6 +2,8 @@
 import { Routes } from "@angular/router";
 import { authGuard, authMatchGuard } from "./guards/auth.guard";
 import { adminGuard } from "./guards/admin.guard";
+// ← Agent guard’ını import et
+import { agentGuard } from "./guards/agent.guard";
 
 export const routes: Routes = [
   { path: "", redirectTo: "signup", pathMatch: "full" },
@@ -23,7 +25,7 @@ export const routes: Routes = [
       import("./components/numerator/numerator").then((m) => m.Numerator),
   },
 
-  // ————— Admin ana yolu ve çocukları —————
+  // ————— Admin routes —————
   {
     path: "admin",
     canActivate: [authGuard, adminGuard],
@@ -33,11 +35,6 @@ export const routes: Routes = [
         (m) => m.AdminDashboard
       ),
     children: [
-      // {
-      //   path: "",
-      //   redirectTo: "services",
-      //   pathMatch: "full",
-      // },
       {
         path: "services",
         loadComponent: () =>
@@ -52,7 +49,6 @@ export const routes: Routes = [
             (m) => m.AdminTickets
           ),
       },
-
       {
         path: "create",
         loadComponent: () =>
@@ -60,8 +56,19 @@ export const routes: Routes = [
             (m) => m.AdminSignup
           ),
       },
-      // daha sonra ticket oversight vs ekleyebilirsin
+      // … diğer admin child’lar …
     ],
+  },
+
+  // ————— Agent routes —————
+  {
+    path: "agent/tickets",
+    canActivate: [authGuard, agentGuard],
+    canMatch: [authMatchGuard],
+    loadComponent: () =>
+      import("./components/agent-tickets/agent-tickets").then(
+        (m) => m.AgentTickets
+      ),
   },
 
   { path: "**", redirectTo: "signup" },
