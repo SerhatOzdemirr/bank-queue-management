@@ -9,10 +9,11 @@ namespace BankNumerator.Api.Models
         public byte[] PasswordSalt { get; set; } = null!;
         public UserRole Role { get; set; } = UserRole.Default;
 
-        public enum UserRole
+       public enum UserRole
         {
-            Default = 0,
-            Admin   = 1
+        Default = 0,
+        Admin   = 1,
+        Agent   = 2    
         }
     }
 }

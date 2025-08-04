@@ -15,6 +15,9 @@ namespace BankNumerator.Api.Data
         public DbSet<ServiceItem> Services { get; set; } = null!;
         public DbSet<ServiceCounter> Counters { get; set; } = null!;
         public DbSet<Ticket> Tickets { get; set; } = null!;
+        public DbSet<Agent> Agents { get; set; } = null!;
+        public DbSet<AgentSkill> AgentSkills { get; set; } = null!;
+        public DbSet<TicketAssignment> TicketAssignments { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -50,38 +53,79 @@ namespace BankNumerator.Api.Data
                 .HasKey(c => c.ServiceKey);
 
             modelBuilder.Entity<Ticket>(builder =>
-    {
-        // Tablo adı
-        builder.ToTable("Tickets");
+            {
+                // Tablo adı
+                builder.ToTable("Tickets");
 
-        // 1) Id sütununu PK ve identity yap
-        builder.HasKey(t => t.Id);
-        builder.Property(t => t.Id)
-               .UseIdentityByDefaultColumn(); // PostgreSQL için identity
+                // 1) Id sütununu PK ve identity yap
+                builder.HasKey(t => t.Id);
+                builder.Property(t => t.Id)
+                    .UseIdentityByDefaultColumn(); // PostgreSQL için identity
 
-        // 2) Diğer alanlar
-        builder.Property(t => t.Number)
-               .IsRequired();
+                // 2) Diğer alanlar
+                builder.Property(t => t.Number)
+                    .IsRequired();
 
-        builder.Property(t => t.ServiceKey)
-               .HasMaxLength(100)
-               .IsRequired();
+                builder.Property(t => t.ServiceKey)
+                    .HasMaxLength(100)
+                    .IsRequired();
 
-        builder.Property(t => t.ServiceLabel)
-               .IsRequired();
+                builder.Property(t => t.ServiceLabel)
+                    .IsRequired();
 
-        builder.Property(t => t.TakenAt)
-               .IsRequired();
+                builder.Property(t => t.TakenAt)
+                    .IsRequired();
 
-        builder.Property(t => t.UserId)
-               .IsRequired();
+                builder.Property(t => t.UserId)
+                    .IsRequired();
 
-        // 3) User ilişkisi (FK)
-        builder.HasOne(t => t.User)
-               .WithMany()                   // eğer User’ın Ticket koleksiyonu yoksa
-               .HasForeignKey(t => t.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
-    });
+                // 3) User ilişkisi (FK)
+                builder.HasOne(t => t.User)
+                    .WithMany()                   // eğer User’ın Ticket koleksiyonu yoksa
+                    .HasForeignKey(t => t.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+            modelBuilder.Entity<Agent>(builder =>
+            {
+                builder.ToTable("Agents");
+                builder.HasKey(a => a.Id);
+                builder.Property(a => a.UserId).IsRequired();
+                builder.HasOne(a => a.User)
+                       .WithMany()
+                       .HasForeignKey(a => a.UserId)
+                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // --- AgentSkill composite key ---
+            modelBuilder.Entity<AgentSkill>(builder =>
+            {
+                builder.ToTable("AgentSkills");
+                builder.HasKey(s => new { s.AgentId, s.ServiceKey });
+                builder.Property(s => s.ServiceKey).HasMaxLength(100).IsRequired();
+                builder.HasOne(s => s.Agent)
+                       .WithMany(a => a.Skills)
+                       .HasForeignKey(s => s.AgentId)
+                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // --- TicketAssignment composite key and relations ---
+            modelBuilder.Entity<TicketAssignment>(builder =>
+            {
+                builder.ToTable("TicketAssignments");
+                builder.HasKey(ta => new { ta.TicketId, ta.AgentId });
+                builder.Property(ta => ta.AssignedAt).IsRequired();
+                builder.Property(ta => ta.Status).HasMaxLength(20).HasDefaultValue("Pending");
+                builder.HasOne(ta => ta.Ticket)
+                       .WithMany()  // eğer Ticket’ta koleksiyon yoksa
+                       .HasForeignKey(ta => ta.TicketId)
+                       .OnDelete(DeleteBehavior.Cascade);
+                builder.HasOne(ta => ta.Agent)
+                       .WithMany(a => a.Assignments)
+                       .HasForeignKey(ta => ta.AgentId)
+                       .OnDelete(DeleteBehavior.Cascade);
+            });
 
         }
     }

@@ -20,15 +20,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 // Models/TicketDto.cs
 namespace BankNumerator.Api.Models
 {
-    public class TicketDto
+ public class TicketDto
     {
-        public int      Number       { get; set; }
-        public string   ServiceKey   { get; set; } = default!;
-        public string   ServiceLabel { get; set; } = default!;
-        public DateTime TakenAt      { get; set; }
+        // Orijinal ticket bilgileri
+        public int      Number            { get; set; }
+        public string   ServiceKey        { get; set; } = default!;
+        public string   ServiceLabel      { get; set; } = default!;
+        public DateTime TakenAt           { get; set; }
 
-        // Exposed user info
-        public int      UserId       { get; set; }
-        public string   Username     { get; set; } = default!;
+        // Bilet sahibinin bilgisi
+        public int      UserId            { get; set; }
+        public string   Username          { get; set; } = default!;
+
+        // Agent ataması bilgisi
+        public int?     AssignedAgentId   { get; set; }
+        public DateTime? AssignedAt       { get; set; }
+        public string?  AssignmentStatus  { get; set; }
     }
 }
