@@ -19,53 +19,75 @@ namespace BankNumerator.Api.Controllers
             _ctx = ctx;
         }
 
-        // GET /api/admin/services
-        [HttpGet("services")]
-        public async Task<IActionResult> GetServices()
-        {
-            var list = await _ctx.Services.ToListAsync();
-            return Ok(list);
-        }
-
-        // POST /api/admin/services
-        [HttpPost("services")]
-        public async Task<IActionResult> AddService([FromBody] ServiceItem service)
-        {
-            if (string.IsNullOrWhiteSpace(service.Key) || string.IsNullOrWhiteSpace(service.Label))
+       // GET /api/admin/services
+    [HttpGet("services")]
+    public async Task<IActionResult> GetServices()
+    {
+        var list = await _ctx.Services
+            .Select(s => new ServiceDto
             {
-                return BadRequest("Key and Label are required");
-            }
-            _ctx.Services.Add(service);
-            await _ctx.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetServices), new { key = service.Key }, service);
-        }
+                Id            = s.Id,
+                ServiceKey    = s.Key,
+                Label         = s.Label,
+                IsActive      = s.IsActive,
+                MaxNumber     = s.MaxNumber,
+                CurrentNumber = _ctx.Counters
+                                     .Where(c => c.ServiceKey == s.Key)
+                                     .Select(c => c.CurrentNumber)
+                                     .FirstOrDefault()
+            })
+            .ToListAsync();
 
-        // PUT /api/admin/service/{id}
-        [HttpPut("services/{id}")]
-        public async Task<IActionResult> UpdateService(int id, [FromBody] ServiceItem updated)
+        return Ok(list);
+    }
+
+    // POST /api/admin/services
+    [HttpPost("services")]
+    public async Task<IActionResult> AddService([FromBody] ServiceDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.ServiceKey) || string.IsNullOrWhiteSpace(dto.Label))
+            return BadRequest("Key and Label are required");
+
+        var entity = new ServiceItem
         {
-            var service = await _ctx.Services.FindAsync(id);
-            if (service == null) return NotFound();
+            Key       = dto.ServiceKey,
+            Label     = dto.Label,
+            IsActive  = dto.IsActive,
+            MaxNumber = dto.MaxNumber
+        };
+        _ctx.Services.Add(entity);
+        await _ctx.SaveChangesAsync();
 
-            service.Label = updated.Label;
-            service.IsActive = updated.IsActive;
-            service.Key       = updated.Key;
-            service.MaxNumber = updated.MaxNumber;
+        dto.Id = entity.Id;
+        dto.CurrentNumber = 0; // yeni servis
+        return CreatedAtAction(nameof(GetServices), new { key = dto.ServiceKey }, dto);
+    }
 
-            await _ctx.SaveChangesAsync();
-            return NoContent();
-        }
+    // PUT /api/admin/services/{id}
+    [HttpPut("services/{id}")]
+    public async Task<IActionResult> UpdateService(int id, [FromBody] ServiceDto dto)
+    {
+        var service = await _ctx.Services.FindAsync(id);
+        if (service == null) return NotFound();
 
-        // DELETE /api/admin/service/{id}
-        [HttpDelete("services/{id}")]
-        public async Task<IActionResult> DeleteService(int id)
-        {
-            var service = await _ctx.Services.FindAsync(id);
-            if (service == null) return NotFound();
-            _ctx.Services.Remove(service);
-            await _ctx.SaveChangesAsync();
-            return NoContent();
-        }
+        service.Key       = dto.ServiceKey;
+        service.Label     = dto.Label;
+        service.IsActive  = dto.IsActive;
+        service.MaxNumber = dto.MaxNumber;
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // DELETE /api/admin/services/{id}
+    [HttpDelete("services/{id}")]
+    public async Task<IActionResult> DeleteService(int id)
+    {
+        var service = await _ctx.Services.FindAsync(id);
+        if (service == null) return NotFound();
+        _ctx.Services.Remove(service);
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
 
         // GET /api/admin/tickets
         [HttpGet("tickets")]

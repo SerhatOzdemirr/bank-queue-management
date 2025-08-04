@@ -51,7 +51,7 @@ export class ServiceManagementComponent implements OnInit {
   toggleActive(svc: ServiceItem): void {
     this.adminService
       .updateService(svc.id, {
-        key: svc.key,
+        serviceKey: svc.serviceKey,
         label: svc.label,
         isActive: !svc.isActive,
         maxNumber: svc.maxNumber,
@@ -71,7 +71,7 @@ export class ServiceManagementComponent implements OnInit {
 
     this.adminService
       .updateService(svc.id, {
-        key: svc.key,
+        serviceKey: svc.serviceKey,
         label: svc.label,
         isActive: svc.isActive,
         maxNumber,
@@ -93,7 +93,7 @@ export class ServiceManagementComponent implements OnInit {
   /* ---------- Edit modal ---------- */
   showEditModal(svc: ServiceItem): void {
     this.serviceToEdit = svc;
-    this.updatedKey = svc.key;
+    this.updatedKey = svc.serviceKey;
     this.updatedLabel = svc.label;
     this.updatedActive = svc.isActive;
     this.updatedMax = svc.maxNumber;
@@ -105,7 +105,7 @@ export class ServiceManagementComponent implements OnInit {
 
     this.adminService
       .updateService(this.serviceToEdit.id, {
-        key: this.updatedKey.trim(),
+        serviceKey: this.updatedKey.trim(),
         label: this.updatedLabel.trim(),
         isActive: this.updatedActive,
         maxNumber: this.updatedMax,
@@ -137,7 +137,7 @@ export class ServiceManagementComponent implements OnInit {
   saveAdd(): void {
     this.adminService
       .addService({
-        key: this.addedKey.trim(),
+        serviceKey: this.addedKey.trim(),
         label: this.addedLabel.trim(),
         isActive: this.addedActive,
         maxNumber: this.addedMax,

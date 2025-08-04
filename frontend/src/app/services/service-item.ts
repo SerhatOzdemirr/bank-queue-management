@@ -1,7 +1,7 @@
 // services/service-item.ts
 export interface ServiceItem {
   id: number;
-  key: string;
+  serviceKey: string;
   label: string;
   isActive: boolean;
   maxNumber: number;
