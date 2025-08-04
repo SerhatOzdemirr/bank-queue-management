@@ -1,13 +1,13 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AgentService, TicketAssignment } from '../../services/agent.service';
-import { DatePipe } from '@angular/common';
+import { Component, OnInit, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { AgentService, TicketAssignment } from "../../services/agent.service";
+import { DatePipe } from "@angular/common";
 
 @Component({
   standalone: true,
-  selector: 'app-agent-tickets',
+  selector: "app-agent-tickets",
   imports: [CommonModule],
-  templateUrl: './agent-tickets.html',
+  templateUrl: "./agent-tickets.html",
   providers: [DatePipe],
 })
 export class AgentTickets implements OnInit {
@@ -25,40 +25,57 @@ export class AgentTickets implements OnInit {
   load() {
     this.loading = true;
     this.agentSvc.getMyTickets().subscribe({
-      next: list => {
+      next: (list) => {
         this.tickets = list;
         this.loading = false;
       },
       error: () => {
-        this.error = 'Atama listesi yüklenemedi';
+        this.error = "Atama listesi yüklenemedi";
         this.loading = false;
-      }
+      },
     });
   }
 
   accept(ticket: TicketAssignment) {
     this.agentSvc.accept(ticket.ticketId).subscribe({
-      next: () => this.load(),
-      error: () => this.error = 'Kabul işleminde hata'
+      next: () => {
+        ticket.status = "Accepted";
+      },
+      error: (err) => {
+        console.error("Accept failed", err);
+        this.error = `Kabul işleminde hata: ${err.status}`;
+      },
     });
   }
 
   reject(ticket: TicketAssignment) {
     this.agentSvc.reject(ticket.ticketId).subscribe({
-      next: () => this.load(),
-      error: () => this.error = 'Reddetme işleminde hata'
+      next: () => {
+        ticket.status = "Rejected";
+      },
+      error: (err) => {
+        console.error("Reject failed", err);
+        this.error = "Reddetme işleminde hata";
+      },
     });
   }
 
   release(ticket: TicketAssignment) {
     this.agentSvc.release(ticket.ticketId).subscribe({
-      next: () => this.load(),
-      error: () => this.error = 'Serbest bırakma işleminde hata'
+      next: () => {
+        this.tickets = this.tickets.filter(
+          (t) => t.ticketId !== ticket.ticketId
+        );
+      },
+      error: (err) => {
+        console.error("Release failed", err);
+        this.error = "Serbest bırakma işleminde hata";
+      },
     });
   }
 
   format(dt: string) {
-    return this.datePipe.transform(dt, 'short') ?? dt;
+    return this.datePipe.transform(dt, "short") ?? dt;
   }
 
   trackById(_: number, item: TicketAssignment) {

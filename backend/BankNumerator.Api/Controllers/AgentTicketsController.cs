@@ -36,29 +36,29 @@ namespace BankNumerator.Api.Controllers
         }
 
         /// <summary> 1) Pending statüsündeki kendine ait atamaları getir </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetMyTickets()
+       [HttpGet]
+public async Task<IActionResult> GetMyTickets()
+{
+    var agentId = await GetCurrentAgentIdAsync();
+    if (agentId == null) return Unauthorized();
+
+    var list = await _ctx.TicketAssignments
+        .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
+        .Include(ta => ta.Ticket)
+        .Select(ta => new
         {
-            var agentId = await GetCurrentAgentIdAsync();
-            if (agentId == null) return Unauthorized();
+            ticketId     = ta.Ticket.Id,
+            number       = ta.Ticket.Number,
+            serviceKey   = ta.Ticket.ServiceKey,
+            serviceLabel = ta.Ticket.ServiceLabel,
+            takenAt      = ta.Ticket.TakenAt,
+            assignedAt   = ta.AssignedAt,
+            status       = ta.Status
+        })
+        .ToListAsync();
 
-            var list = await _ctx.TicketAssignments
-                .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
-                .Include(ta => ta.Ticket)
-                .Select(ta => new
-                {
-                    ta.Ticket.Id,
-                    ta.Ticket.Number,
-                    ta.Ticket.ServiceKey,
-                    ta.Ticket.ServiceLabel,
-                    ta.Ticket.TakenAt,
-                    ta.AssignedAt,
-                    ta.Status
-                })
-                .ToListAsync();
-
-            return Ok(list);
-        }
+    return Ok(list);
+}
 
         /// <summary> 2) Kabul et → Status = "Accepted" </summary>
         [HttpPost("{ticketId}/accept")]
