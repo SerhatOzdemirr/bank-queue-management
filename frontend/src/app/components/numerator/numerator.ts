@@ -76,19 +76,39 @@ export class Numerator implements OnInit {
   selectService(item: ServiceItem) {
     this.selectedService = item.serviceKey;
     this.nextStep();
-    console.log("selected " ,this.selectedService)
+    console.log("selected ", this.selectedService);
   }
   disabledCard(item: ServiceItem): boolean {
     return item.currentNumber >= item.maxNumber;
   }
 
+  cancelTicket() {
+    if (!this.ticket) return;
+
+    // this.ticket.serviceKey ve this.ticket.number hazır
+    this.queue.cancel(this.ticket.serviceKey, this.ticket.number).subscribe({
+      next: () => {
+        // UI’ı resetle ve servis sayaçlarını yenile
+        this.firstStep();
+        this.svcApi.getAll().subscribe((list) => (this.services = list));
+      },
+      error: (err) => {
+        console.error("Cancel error status:", err.status, "body:", err.error);
+        this.errorMessage = err.error?.toString() ?? "Cancel failed";
+        this.showError = true;
+        setTimeout(() => (this.showError = false), 3000);
+      },
+    });
+  }
   assignNumber() {
     this.showError = false;
     this.errorMessage = null;
 
     this.queue.getNext(this.selectedService).subscribe({
       next: (res) => {
-        const svc = this.services.find((s) => s.serviceKey === this.selectedService)!;
+        const svc = this.services.find(
+          (s) => s.serviceKey === this.selectedService
+        )!;
         this.showError = false;
         this.ticket = {
           number: res.number,

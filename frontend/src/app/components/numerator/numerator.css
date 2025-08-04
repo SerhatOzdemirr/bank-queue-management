@@ -249,7 +249,9 @@
   90%  { opacity: 1; }
   100% { opacity: 0; }
 }
-
+.btn-cancel{
+  background-color: red;
+}
 .service-card.disabled {
   opacity: 0.4;
   pointer-events: none;

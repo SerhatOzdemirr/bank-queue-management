@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environment';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../../environment";
+import { Observable } from "rxjs";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class QueueService {
   private base = `${environment.apiUrl}/numerator`;
 
@@ -14,5 +14,8 @@ export class QueueService {
     return this.http.get<{ number: number }>(
       `${this.base}/next?service=${service}`
     );
+  }
+  cancel(serviceKey: string, number: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${serviceKey}/${number}`);
   }
 }

@@ -61,6 +61,9 @@
         <strong class="taken-number">{{ ticket.number }}</strong>
         <p><strong>Service:</strong> {{ ticket.serviceLabel }}</p>
         <p><strong>Taken At:</strong> {{ ticket.takenAt | date : "short" }}</p>
+        <button class="btn-cancel" (click)="cancelTicket()">
+          Cancel Ticket
+        </button>
       </div>
 
       <button class="btn-prev" (click)="firstStep()">New Operation</button>

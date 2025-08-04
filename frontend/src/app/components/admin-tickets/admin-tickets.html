@@ -9,8 +9,8 @@
         (change)="onServiceChange($any($event.target).value)"
       >
         <option value="">— All —</option>
-        <option *ngFor="let s of services" [value]="s.key">
-          {{ s.key }} — {{ s.label }}
+        <option *ngFor="let s of services" [value]="s.serviceKey">
+          {{ s.serviceKey }} — {{ s.label }}
         </option>
       </select>
     </div>

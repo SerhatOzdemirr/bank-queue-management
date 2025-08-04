@@ -30,7 +30,7 @@ namespace BankNumerator.Api.Controllers
             return NoContent();
         }
         // GET api/numerator/next?service={serviceKey}
-       [HttpGet("next")]
+        [HttpGet("next")]
         public async Task<IActionResult> GetNext([FromQuery] string service)
         {
             foreach (var c in User.Claims)
@@ -57,11 +57,11 @@ namespace BankNumerator.Api.Controllers
             // Create ticket
             var ticket = new Ticket
             {
-                Number       = counter.CurrentNumber,
-                ServiceKey   = svc.Key,
+                Number = counter.CurrentNumber,
+                ServiceKey = svc.Key,
                 ServiceLabel = svc.Label,
-                TakenAt      = DateTime.UtcNow,
-                UserId       = userId
+                TakenAt = DateTime.UtcNow,
+                UserId = userId
             };
             _ctx.Tickets.Add(ticket);
 
@@ -69,14 +69,51 @@ namespace BankNumerator.Api.Controllers
 
             var dto = new TicketDto
             {
-                Number       = ticket.Number,
-                ServiceKey   = ticket.ServiceKey,
+                Number = ticket.Number,
+                ServiceKey = ticket.ServiceKey,
                 ServiceLabel = ticket.ServiceLabel,
-                TakenAt      = ticket.TakenAt,
-                UserId       = ticket.UserId,
-                Username     = (await _ctx.Users.FindAsync(userId))?.Username ?? ""
+                TakenAt = ticket.TakenAt,
+                UserId = ticket.UserId,
+                Username = (await _ctx.Users.FindAsync(userId))?.Username ?? ""
             };
             return Ok(dto);
+        }
+
+
+        [HttpDelete("{serviceKey}/{number}")]
+        public async Task<IActionResult> CancelTicket(
+            [FromRoute] string serviceKey,
+            [FromRoute] int number)
+        {
+            // 1) Kimlik doğrulama
+            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idStr, out var userId) || userId <= 0)
+                return Unauthorized("Invalid user");
+
+            // 2) Bileti veritabanından getir (sadece kendi bileti)
+            var ticket = await _ctx.Tickets
+                .SingleOrDefaultAsync(t =>
+                    t.ServiceKey == serviceKey
+                    && t.Number     == number
+                    && t.UserId     == userId);
+
+            if (ticket == null)
+                return NotFound("Ticket not found or not your ticket");
+
+            // 3) Sayaçtan da azaltmak istersek
+            var counter = await _ctx.Counters
+                .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
+            if (counter != null && counter.CurrentNumber > 0)
+            {
+                counter.CurrentNumber--;
+                _ctx.Counters.Update(counter);
+            }
+
+            // 4) Bileti sil
+            _ctx.Tickets.Remove(ticket);
+            await _ctx.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
