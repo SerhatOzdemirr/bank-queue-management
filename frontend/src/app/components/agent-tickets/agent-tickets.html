@@ -1,37 +1,51 @@
-<div *ngIf="loading">Yükleniyor…</div>
+<div *ngIf="loading">Loading…</div>
 <div *ngIf="error" class="error">{{ error }}</div>
+<div class="agent-div">
+  <h2 class="agent-header">Agent Tickets</h2>
+  <table *ngIf="!loading && tickets.length" class="table-agent-tickets">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Service</th>
+        <th>Taken At</th>
+        <th>Assigned At</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of tickets; trackBy: trackById">
+        <td>{{ t.number }}</td>
+        <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
+        <td>{{ format(t.takenAt) }}</td>
+        <td>{{ format(t.assignedAt) }}</td>
+        <td>{{ t.status }}</td>
+        <td>
+          <button
+            class="accept-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="accept(t)"
+          >
+            Accept
+          </button>
+          <button
+            class="reject-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="reject(t)"
+          >
+            Reject
+          </button>
+          <button
+            class="release-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="release(t)"
+          >
+            Release
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<table *ngIf="!loading && tickets.length" class="table">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Servis</th>
-      <th>Alındı</th>
-      <th>Atandı</th>
-      <th>Durum</th>
-      <th>İşlem</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let t of tickets; trackBy: trackById">
-      <td>{{ t.number }}</td>
-      <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
-      <td>{{ format(t.takenAt) }}</td>
-      <td>{{ format(t.assignedAt) }}</td>
-      <td>{{ t.status }}</td>
-      <td>
-        <button 
-          *ngIf="t.status === 'Pending'" 
-          (click)="accept(t)">Kabul</button>
-        <button 
-          *ngIf="t.status === 'Pending'" 
-          (click)="reject(t)">Reddet</button>
-        <button 
-          *ngIf="t.status === 'Pending'" 
-          (click)="release(t)">Serbest Bırak</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<div *ngIf="!loading && !tickets.length">Bekleyen atamanız yok.</div>
+<div *ngIf="!loading && !tickets.length">You have no pending assignments.</div>

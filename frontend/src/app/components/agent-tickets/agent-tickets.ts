@@ -8,6 +8,7 @@ import { DatePipe } from "@angular/common";
   selector: "app-agent-tickets",
   imports: [CommonModule],
   templateUrl: "./agent-tickets.html",
+  styleUrl : "./agent-tickets.css",
   providers: [DatePipe],
 })
 export class AgentTickets implements OnInit {

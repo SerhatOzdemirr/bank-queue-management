@@ -1,0 +1,66 @@
+.agent-div {
+  margin: 0;
+  padding: 0;
+}
+
+.agent-div .agent-header {
+  margin: 0;
+  padding: 1%;
+  text-align: center;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+.agent-div .table-agent-tickets {
+  margin-top: 0;
+  width: 100%;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border-collapse: collapse;
+}
+
+.agent-div .table-agent-tickets th,
+.agent-div .table-agent-tickets td {
+  text-align: center;
+  border: 1px solid var(--tertiary-color);
+  padding: 3px;
+}
+
+.agent-div .accept-btn,
+.agent-div .reject-btn,
+.agent-div .release-btn {
+  outline: none;
+  border: 1px solid var(--text-color);
+  margin-left: 5px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: 5px;
+  width: 100px;
+  border-radius: 5px;
+  background: none;
+}
+
+.agent-div .accept-btn {
+  background-color: var(--tertiary-color);
+}
+.agent-div .accept-btn:hover {
+  background-color: var(--text-color);
+  color: var(--tertiary-color);
+}
+
+.agent-div .reject-btn {
+  background-color: red;
+}
+.agent-div .reject-btn:hover {
+  background-color: var(--text-color);
+  color: red;
+}
+
+.agent-div .release-btn {
+  background-color: green;
+}
+.agent-div .release-btn:hover {
+  background-color: var(--text-color);
+  color: green;
+}
