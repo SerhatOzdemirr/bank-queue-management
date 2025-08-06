@@ -11,35 +11,46 @@
         <th>Taken At</th>
         <th>Assigned At</th>
         <th>Status</th>
+        <th>User</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
       <tr
         *ngFor="let t of tickets; trackBy: trackById"
-        [ngClass]="{ 'high-priority': t.priority > 1 }"
+        [ngClass]="{
+          'high-priority': t.priority >= 1,
+          'high-priority-top': t.priority >= 2
+        }"
       >
         <td>{{ t.number }}</td>
         <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
         <td>{{ format(t.takenAt) }}</td>
         <td>{{ format(t.assignedAt) }}</td>
         <td>{{ t.status }}</td>
+        <td>{{ t.username }}</td>
         <td>
           <button
             *ngIf="t.status === 'Pending'"
             class="accept-btn"
             (click)="accept(t)"
-          >Accept</button>
+          >
+            Accept
+          </button>
           <button
             *ngIf="t.status === 'Pending'"
             class="reject-btn"
             (click)="reject(t)"
-          >Reject</button>
+          >
+            Reject
+          </button>
           <button
             *ngIf="t.status === 'Pending'"
             class="release-btn"
             (click)="release(t)"
-          >Release</button>
+          >
+            Release
+          </button>
         </td>
       </tr>
     </tbody>

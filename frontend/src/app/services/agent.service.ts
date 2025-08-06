@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment';
+import { Ticket } from './admin.service';
 
 export interface TicketAssignment {
   ticketId: number;
@@ -12,6 +13,7 @@ export interface TicketAssignment {
   assignedAt: string;
   status: 'Pending' | 'Accepted' | 'Rejected';
   priority: number; 
+  username : string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -54,19 +54,20 @@ public async Task<IActionResult> GetMyTickets()
               tt => tt.t.UserId,
               u  => u.Id,
               (tt, u) => new { tt.ta, tt.t, u })
-        // ② Öncelik puanına göre azalan sıralama
+        // Öncelik puanına göre azalan sıralama
         .OrderByDescending(x => x.u.PriorityScore)
         .ThenBy(x => x.ta.AssignedAt) // eşit puan varsa atandığı zamana göre
         .Select(x => new
         {
-            ticketId     = x.t.Id,
-            number       = x.t.Number,
-            serviceKey   = x.t.ServiceKey,
+            ticketId = x.t.Id,
+            number = x.t.Number,
+            serviceKey = x.t.ServiceKey,
             serviceLabel = x.t.ServiceLabel,
-            takenAt      = x.t.TakenAt,
-            assignedAt   = x.ta.AssignedAt,
-            status       = x.ta.Status,
-            priority     = x.u.PriorityScore   // yeni alan
+            takenAt = x.t.TakenAt,
+            assignedAt = x.ta.AssignedAt,
+            status = x.ta.Status,
+            priority = x.u.PriorityScore,   // yeni alan
+            username = x.u.Username
         })
         .ToListAsync();
 

@@ -64,8 +64,9 @@
   background-color: var(--text-color);
   color: green;
 }
-
-
 .high-priority {
   background-color: rgba(255, 223, 0, 0.2); 
+}
+.high-priority-top {
+  background-color: rgb(241, 95, 95);
 }
