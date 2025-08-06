@@ -30,26 +30,17 @@
         <td>{{ t.status }}</td>
         <td>{{ t.username }}</td>
         <td>
-          <button
-            *ngIf="t.status === 'Pending'"
-            class="accept-btn"
-            (click)="accept(t)"
-          >
+          <button *ngIf="t.status === 'Pending'" (click)="accept(t)">
             Accept
           </button>
-          <button
-            *ngIf="t.status === 'Pending'"
-            class="reject-btn"
-            (click)="reject(t)"
-          >
+          <button *ngIf="t.status === 'Pending'" (click)="reject(t)">
             Reject
           </button>
-          <button
-            *ngIf="t.status === 'Pending'"
-            class="release-btn"
-            (click)="release(t)"
-          >
+          <button *ngIf="t.status === 'Pending'" (click)="release(t)">
             Release
+          </button>
+          <button *ngIf="t.status === 'Pending'" (click)="showRoutingList(t)">
+            Route
           </button>
         </td>
       </tr>
@@ -57,4 +48,27 @@
   </table>
 
   <div *ngIf="!tickets.length">You have no pending assignments.</div>
+</div>
+
+<!--  Modal Section  -->
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>
+      Route ticket #{{ selectedForRouting?.number }} –
+      {{ selectedForRouting?.serviceLabel }}
+    </h3>
+
+    <div *ngIf="modalCandidates.length === 0">No other agents available.</div>
+
+    <div class="candidate-list" *ngIf="modalCandidates.length > 0">
+      <button
+        *ngFor="let c of modalCandidates"
+        (click)="routeTo(selectedForRouting!, c.agentId)"
+      >
+        {{ c.username }} (ID: {{ c.agentId }})
+      </button>
+    </div>
+
+    <button class="close-btn" (click)="closeModal()">Cancel</button>
+  </div>
 </div>

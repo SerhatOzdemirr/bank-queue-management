@@ -115,3 +115,47 @@
     color: green;
   }
 }
+
+.routing-list-cell {
+  background: #f9f9f9;
+  padding: 0.5em;
+}
+.candidate-btn {
+  margin-right: 0.5em;
+}
+.cancel-btn {
+  margin-left: 1em;
+  opacity: 0.7;
+}
+
+
+
+/* modal backdrop */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+/* modal window */
+.modal-content {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.candidate-list button {
+  display: block;
+  width: 100%;
+  margin: 0.25rem 0;
+}
+
+.close-btn {
+  margin-top: 1rem;
+  opacity: 0.8;
+}
