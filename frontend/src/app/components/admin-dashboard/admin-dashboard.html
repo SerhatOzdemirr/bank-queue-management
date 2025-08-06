@@ -1,6 +1,9 @@
-<!-- src/app/components/admin-dashboard/admin-dashboard.html -->
 <div class="admin-container">
-  <app-admin-sidebar class="sidebar"></app-admin-sidebar>
+  <app-admin-sidebar
+    *ngIf="showSidebar"
+    class="sidebar">
+  </app-admin-sidebar>
+
   <div class="main-content">
     <router-outlet></router-outlet>
   </div>

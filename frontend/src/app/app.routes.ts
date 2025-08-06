@@ -55,6 +55,7 @@ export const routes: Routes = [
           import("./components/admin-signup/admin-signup").then(
             (m) => m.AdminSignup
           ),
+        data: { hideSidebar: true },
       },
       {
         path: "agents",
@@ -62,6 +63,7 @@ export const routes: Routes = [
           import("./components/admin-agents/admin-agents").then(
             (m) => m.AdminAgents
           ),
+        data: { hideSidebar: true },
       },
     ],
   },

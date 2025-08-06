@@ -30,16 +30,16 @@
         <td>{{ t.status }}</td>
         <td>{{ t.username }}</td>
         <td>
-          <button *ngIf="t.status === 'Pending'" (click)="accept(t)">
+          <button class="accept-btn" *ngIf="t.status === 'Pending'" (click)="accept(t)">
             Accept
           </button>
-          <button *ngIf="t.status === 'Pending'" (click)="reject(t)">
+          <button class="reject-btn" *ngIf="t.status === 'Pending'" (click)="reject(t)">
             Reject
           </button>
-          <button *ngIf="t.status === 'Pending'" (click)="release(t)">
+          <button class="release-btn" *ngIf="t.status === 'Pending'" (click)="release(t)">
             Release
           </button>
-          <button *ngIf="t.status === 'Pending'" (click)="showRoutingList(t)">
+          <button class="route-btn" *ngIf="t.status === 'Pending'" (click)="showRoutingList(t)">
             Route
           </button>
         </td>

@@ -57,6 +57,9 @@ export class AuthService {
   isAdmin(): boolean {
     return this.getRole() === 'Admin';
   }
+  isAgent(): boolean {
+    return this.getRole() === 'Agent';
+  }
 
   logout(): void {
     localStorage.removeItem('token');
