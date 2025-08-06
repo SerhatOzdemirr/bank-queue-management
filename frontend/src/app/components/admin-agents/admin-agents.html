@@ -1,0 +1,47 @@
+<div class="admin-agents-container">
+  <h2>Create Agent</h2>
+  <div class="form-group">
+    <input [(ngModel)]="username" placeholder="Username" />
+    <input [(ngModel)]="email" placeholder="Email" />
+    <input [(ngModel)]="password" placeholder="Password" type="password" />
+  </div>
+
+  <div class="services-group">
+    <label *ngFor="let s of services">
+      <input
+        type="checkbox"
+        [value]="s.serviceKey"
+        (change)="onServiceToggle(s.serviceKey, $any($event.target).checked)"
+      />
+      {{ s.label }}
+    </label>
+  </div>
+
+  <button (click)="createAgent()">Create Agent</button>
+  <p *ngIf="error" class="error">{{ error }}</p>
+  <p *ngIf="success" class="success">{{ success }}</p>
+
+  <hr />
+
+  <h2>Existing Agents</h2>
+  <table *ngIf="agents.length">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Services</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of agents">
+        <td>{{ a.agentId }}</td>
+        <td>{{ a.username }}</td>
+        <td>{{ a.email }}</td>
+        <td>{{ a.serviceKeys.join(", ") }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!agents.length">No agents found.</div>
+</div>

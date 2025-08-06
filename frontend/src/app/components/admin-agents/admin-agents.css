@@ -1,0 +1,50 @@
+.admin-agents-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 1rem;
+}
+
+.form-group input {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+}
+
+.services-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.services-group label {
+  cursor: pointer;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.error {
+  color: red;
+  margin-top: 0.5rem;
+}
+
+.success {
+  color: green;
+  margin-top: 0.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: left;
+}

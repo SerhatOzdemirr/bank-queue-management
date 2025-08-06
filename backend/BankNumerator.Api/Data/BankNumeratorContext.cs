@@ -93,6 +93,8 @@ namespace BankNumerator.Api.Data
             {
                 builder.ToTable("Agents");
                 builder.HasKey(a => a.Id);
+                builder.Property(a => a.Id)
+                    .UseIdentityByDefaultColumn();  
                 builder.Property(a => a.UserId).IsRequired();
                 builder.HasOne(a => a.User)
                        .WithMany()
@@ -120,7 +122,7 @@ namespace BankNumerator.Api.Data
                 builder.Property(ta => ta.AssignedAt).IsRequired();
                 builder.Property(ta => ta.Status).HasMaxLength(20).HasDefaultValue("Pending");
                 builder.HasOne(ta => ta.Ticket)
-                       .WithMany()  // eğer Ticket’ta koleksiyon yoksa
+                       .WithMany()  
                        .HasForeignKey(ta => ta.TicketId)
                        .OnDelete(DeleteBehavior.Cascade);
                 builder.HasOne(ta => ta.Agent)

@@ -56,7 +56,13 @@ export const routes: Routes = [
             (m) => m.AdminSignup
           ),
       },
-      // … diğer admin child’lar …
+      {
+        path: "agents",
+        loadComponent: () =>
+          import("./components/admin-agents/admin-agents").then(
+            (m) => m.AdminAgents
+          ),
+      },
     ],
   },
 
