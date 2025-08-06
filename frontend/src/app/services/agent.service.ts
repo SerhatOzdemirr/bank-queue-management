@@ -11,6 +11,7 @@ export interface TicketAssignment {
   takenAt: string;
   assignedAt: string;
   status: 'Pending' | 'Accepted' | 'Rejected';
+  priority: number; 
 }
 
 @Injectable({ providedIn: 'root' })

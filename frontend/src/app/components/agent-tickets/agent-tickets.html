@@ -1,8 +1,9 @@
 <div *ngIf="loading">Loading…</div>
 <div *ngIf="error" class="error">{{ error }}</div>
-<div class="agent-div">
+
+<div class="agent-div" *ngIf="!loading">
   <h2 class="agent-header">Agent Tickets</h2>
-  <table *ngIf="!loading && tickets.length" class="table-agent-tickets">
+  <table *ngIf="tickets.length" class="table-agent-tickets">
     <thead>
       <tr>
         <th>#</th>
@@ -14,7 +15,10 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let t of tickets; trackBy: trackById">
+      <tr
+        *ngFor="let t of tickets; trackBy: trackById"
+        [ngClass]="{ 'high-priority': t.priority > 1 }"
+      >
         <td>{{ t.number }}</td>
         <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
         <td>{{ format(t.takenAt) }}</td>
@@ -22,30 +26,24 @@
         <td>{{ t.status }}</td>
         <td>
           <button
+            *ngIf="t.status === 'Pending'"
             class="accept-btn"
-            *ngIf="t.status === 'Pending'"
             (click)="accept(t)"
-          >
-            Accept
-          </button>
+          >Accept</button>
           <button
+            *ngIf="t.status === 'Pending'"
             class="reject-btn"
-            *ngIf="t.status === 'Pending'"
             (click)="reject(t)"
-          >
-            Reject
-          </button>
+          >Reject</button>
           <button
-            class="release-btn"
             *ngIf="t.status === 'Pending'"
+            class="release-btn"
             (click)="release(t)"
-          >
-            Release
-          </button>
+          >Release</button>
         </td>
       </tr>
     </tbody>
   </table>
-</div>
 
-<div *ngIf="!loading && !tickets.length">You have no pending assignments.</div>
+  <div *ngIf="!tickets.length">You have no pending assignments.</div>
+</div>

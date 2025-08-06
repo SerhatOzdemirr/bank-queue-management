@@ -1,3 +1,4 @@
+// Models/User.cs
 namespace BankNumerator.Api.Models
 {
     public class User
@@ -9,11 +10,13 @@ namespace BankNumerator.Api.Models
         public byte[] PasswordSalt { get; set; } = null!;
         public UserRole Role { get; set; } = UserRole.Default;
 
-       public enum UserRole
+        public int PriorityScore { get; set; }
+
+        public enum UserRole
         {
-        Default = 0,
-        Admin   = 1,
-        Agent   = 2    
+            Default = 0,
+            Admin   = 1,
+            Agent   = 2    
         }
     }
 }

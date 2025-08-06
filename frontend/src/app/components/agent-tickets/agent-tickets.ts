@@ -8,7 +8,7 @@ import { DatePipe } from "@angular/common";
   selector: "app-agent-tickets",
   imports: [CommonModule],
   templateUrl: "./agent-tickets.html",
-  styleUrl : "./agent-tickets.css",
+  styleUrls: ["./agent-tickets.css"],
   providers: [DatePipe],
 })
 export class AgentTickets implements OnInit {
@@ -39,39 +39,22 @@ export class AgentTickets implements OnInit {
 
   accept(ticket: TicketAssignment) {
     this.agentSvc.accept(ticket.ticketId).subscribe({
-      next: () => {
-        ticket.status = "Accepted";
-      },
-      error: (err) => {
-        console.error("Accept failed", err);
-        this.error = `Kabul işleminde hata: ${err.status}`;
-      },
+      next: () => ticket.status = "Accepted",
+      error: (err) => this.error = `Kabul işleminde hata: ${err.status}`,
     });
   }
 
   reject(ticket: TicketAssignment) {
     this.agentSvc.reject(ticket.ticketId).subscribe({
-      next: () => {
-        ticket.status = "Rejected";
-      },
-      error: (err) => {
-        console.error("Reject failed", err);
-        this.error = "Reddetme işleminde hata";
-      },
+      next: () => ticket.status = "Rejected",
+      error: () => this.error = "Reddetme işleminde hata",
     });
   }
 
   release(ticket: TicketAssignment) {
     this.agentSvc.release(ticket.ticketId).subscribe({
-      next: () => {
-        this.tickets = this.tickets.filter(
-          (t) => t.ticketId !== ticket.ticketId
-        );
-      },
-      error: (err) => {
-        console.error("Release failed", err);
-        this.error = "Serbest bırakma işleminde hata";
-      },
+      next: () => this.tickets = this.tickets.filter(t => t.ticketId !== ticket.ticketId),
+      error: () => this.error = "Serbest bırakma işleminde hata",
     });
   }
 

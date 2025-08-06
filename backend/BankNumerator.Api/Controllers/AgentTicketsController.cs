@@ -35,30 +35,44 @@ namespace BankNumerator.Api.Controllers
             return agent?.Id;
         }
 
-        /// <summary> 1) Pending statüsündeki kendine ait atamaları getir </summary>
-       [HttpGet]
+       // Controllers/AgentTicketsController.cs
+[HttpGet]
 public async Task<IActionResult> GetMyTickets()
 {
     var agentId = await GetCurrentAgentIdAsync();
-    if (agentId == null) return Unauthorized();
+    if (agentId == null) 
+        return Unauthorized();
 
     var list = await _ctx.TicketAssignments
         .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
-        .Include(ta => ta.Ticket)
-        .Select(ta => new
+        // Ticket ve User ile join
+        .Join(_ctx.Tickets,
+              ta => ta.TicketId,
+              t  => t.Id,
+              (ta, t) => new { ta, t })
+        .Join(_ctx.Users,
+              tt => tt.t.UserId,
+              u  => u.Id,
+              (tt, u) => new { tt.ta, tt.t, u })
+        // ② Öncelik puanına göre azalan sıralama
+        .OrderByDescending(x => x.u.PriorityScore)
+        .ThenBy(x => x.ta.AssignedAt) // eşit puan varsa atandığı zamana göre
+        .Select(x => new
         {
-            ticketId     = ta.Ticket.Id,
-            number       = ta.Ticket.Number,
-            serviceKey   = ta.Ticket.ServiceKey,
-            serviceLabel = ta.Ticket.ServiceLabel,
-            takenAt      = ta.Ticket.TakenAt,
-            assignedAt   = ta.AssignedAt,
-            status       = ta.Status
+            ticketId     = x.t.Id,
+            number       = x.t.Number,
+            serviceKey   = x.t.ServiceKey,
+            serviceLabel = x.t.ServiceLabel,
+            takenAt      = x.t.TakenAt,
+            assignedAt   = x.ta.AssignedAt,
+            status       = x.ta.Status,
+            priority     = x.u.PriorityScore   // yeni alan
         })
         .ToListAsync();
 
     return Ok(list);
 }
+
 
         /// <summary> 2) Kabul et → Status = "Accepted" </summary>
         [HttpPost("{ticketId}/accept")]

@@ -30,7 +30,9 @@ namespace BankNumerator.Api.Data
             modelBuilder.Entity<User>()
                 .Property(u => u.Role)
                 .HasDefaultValue(User.UserRole.Default);
-
+            modelBuilder.Entity<User>()
+                .Property(u => u.PriorityScore)
+                .HasDefaultValue(0);
             // ServiceItem seed data
             modelBuilder.Entity<ServiceItem>().ToTable("Services");
             modelBuilder.Entity<ServiceItem>()
