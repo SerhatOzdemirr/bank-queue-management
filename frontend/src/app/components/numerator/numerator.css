@@ -14,7 +14,7 @@
   box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
   max-width: 1400px;
   width: 60%;
-  height: 60%;
+  height: 78%;
   border: 1px solid var(--tertiary-color);
 }
 @media (max-width: 768px) {
@@ -105,10 +105,9 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  max-width: 320px; /* responsive kutu genişliği   */
+  width:500px; /* responsive kutu genişliği   */
   padding: 1.5rem 2rem; /* iç boşluk                   */
   margin: 1rem auto; /* ortala                      */
-
   background: var(--tertiary-color);
   color: var(--bg-root);
   border: 2px solid var(--secondary-color);
@@ -251,6 +250,18 @@
 }
 .btn-cancel{
   background-color: red;
+  outline: none;
+  background-color: var(--text-color);
+  padding: 6px;
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  width: 200px;
+  transition: all .2s ease-in;
+}
+.btn-cancel:hover {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
 }
 .service-card.disabled {
   opacity: 0.4;

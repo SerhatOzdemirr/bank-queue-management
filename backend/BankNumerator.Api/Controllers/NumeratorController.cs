@@ -46,7 +46,7 @@ public async Task<IActionResult> GetNext([FromQuery] string service)
     if (svc == null || !svc.IsActive)
         return BadRequest("Service not found or inactive");
 
-    // 3) Sayaç güncelle
+    // 3) Counter güncelle
     var counter = await _ctx.Counters
         .SingleOrDefaultAsync(c => c.ServiceKey == service)
         ?? new ServiceCounter { ServiceKey = service, CurrentNumber = 0 };
@@ -70,7 +70,7 @@ public async Task<IActionResult> GetNext([FromQuery] string service)
         UserId       = userId
     };
     _ctx.Tickets.Add(ticket);
-    await _ctx.SaveChangesAsync();    // ticket.Id ve Number tamam
+    await _ctx.SaveChangesAsync();    
 
     // 5) AgentSkill tablosundan uygun agent’ı seç
     var skilled = await _ctx.AgentSkills
@@ -80,7 +80,7 @@ public async Task<IActionResult> GetNext([FromQuery] string service)
 
     var assignedAgentId = skilled.Any()
         ? skilled.First()
-        : await _ctx.Agents.Select(a => a.Id).FirstAsync();  // fallback
+        : await _ctx.Agents.Select(a => a.Id).FirstAsync(); 
 
     // 6) TicketAssignment kaydı oluştur
     var assignment = new TicketAssignment
@@ -93,7 +93,6 @@ public async Task<IActionResult> GetNext([FromQuery] string service)
     _ctx.TicketAssignments.Add(assignment);
     await _ctx.SaveChangesAsync();
 
-    // 7) Cevabı döndür (anon tip, mevcut DTO’yu değiştirmiyoruz)
     return Ok(new 
     {
         number            = ticket.Number,
