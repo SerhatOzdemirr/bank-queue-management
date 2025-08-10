@@ -146,26 +146,49 @@ namespace BankNumerator.Api.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// 4) Release → assignment’ı sil, ticket açık kalır (başka işlem yapılmaz)
-        /// </summary>
-        [HttpPost("{ticketId}/release")]
-        public async Task<IActionResult> Release(int ticketId)
-        {
-            var agentId = await GetCurrentAgentIdAsync();
-            if (agentId == null) return Unauthorized();
+       [HttpPost("{ticketId}/release")]
+public async Task<IActionResult> Release(int ticketId)
+{
+    var agentId = await GetCurrentAgentIdAsync();
+    if (agentId == null) 
+        return Unauthorized();
 
-            var assignment = await _ctx.TicketAssignments
-                .SingleOrDefaultAsync(t =>
-                    t.TicketId == ticketId &&
-                    t.AgentId == agentId.Value);
-            if (assignment == null)
-                return NotFound("Assignment not found");
+    // 2) Pull the assignment + the ticket itself
+    var assignment = await _ctx.TicketAssignments
+        .SingleOrDefaultAsync(t =>
+            t.TicketId == ticketId &&
+            t.AgentId  == agentId.Value);
+    if (assignment == null)
+        return NotFound("Assignment not found");
 
-            _ctx.TicketAssignments.Remove(assignment);
-            await _ctx.SaveChangesAsync();
-            return NoContent();
-        }
+    // 3) Load the Ticket so we can delete it and inspect its ServiceKey
+    var ticket = await _ctx.Tickets
+        .SingleOrDefaultAsync(t => t.Id == ticketId);
+    if (ticket == null)
+        return NotFound("Ticket record missing");
+
+    var serviceKey = ticket.ServiceKey;
+
+    // 4) Remove the DB rows: first the assignment, then the ticket
+    _ctx.TicketAssignments.Remove(assignment);
+    _ctx.Tickets.Remove(ticket);
+
+    // 5) Decrement the service counter so the number can be reused
+    var counter = await _ctx.Counters
+        .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
+    if (counter != null && counter.CurrentNumber > 0)
+    {
+        counter.CurrentNumber--;
+        _ctx.Counters.Update(counter);
+    }
+
+    // 6) Persist everything in one go
+    await _ctx.SaveChangesAsync();
+
+    return NoContent();
+}
+
+
         // route to another agent
         [HttpPost("{ticketId}/route/{toAgentId}")]
         public async Task<IActionResult> Route(int ticketId, int toAgentId)

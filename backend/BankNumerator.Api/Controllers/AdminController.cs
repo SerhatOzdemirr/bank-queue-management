@@ -113,21 +113,30 @@ namespace BankNumerator.Api.Controllers
             return Ok(tickets);
         }
 
-        // DELETE /api/admin/tickets/{serviceKey}/{number}
-        [HttpDelete("tickets/{serviceKey}/{number}")]
-        public async Task<IActionResult> CancelTicket(string serviceKey, int number)
+      // DELETE /api/admin/tickets/{serviceKey}/{number}
+        [HttpDelete("tickets/{serviceKey}/{number:int}")]
+        public async Task<IActionResult> CancelTicketByComposite(string serviceKey, int number)
         {
+            serviceKey = serviceKey.Trim();
+
             var ticket = await _ctx.Tickets
-                .SingleOrDefaultAsync(t => t.ServiceKey == serviceKey && t.Number == number);
+                .Where(t => t.ServiceKey == serviceKey && t.Number == number)
+                .OrderByDescending(t => t.Id)         
+                .FirstOrDefaultAsync();
 
-            if (ticket == null)
-                return NotFound();
+            if (ticket == null) return NotFound();
 
-            _ctx.Tickets.Remove(ticket);
-            await _ctx.SaveChangesAsync();
+            await _ctx.TicketAssignments
+                .Where(a => a.TicketId == ticket.Id)
+                .ExecuteDeleteAsync();
+
+            await _ctx.Tickets
+                .Where(t => t.Id == ticket.Id)
+                .ExecuteDeleteAsync();
 
             return NoContent();
         }
+
     }
 }
 
