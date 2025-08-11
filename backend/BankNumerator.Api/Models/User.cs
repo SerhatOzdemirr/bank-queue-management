@@ -15,8 +15,11 @@ namespace BankNumerator.Api.Models
         public enum UserRole
         {
             Default = 0,
-            Admin   = 1,
-            Agent   = 2    
+            Admin = 1,
+            Agent = 2
         }
     }
 }
+public record UserDto(string Username, string Email, string Password);
+public record LoginDto(string Email, string Password);
+

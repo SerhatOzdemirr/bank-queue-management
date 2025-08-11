@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using BankNumerator.Api.Data;        
+using BankNumerator.Api.Services;
+using BankNumerator.Api.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,6 @@ var jwtSection = builder.Configuration.GetSection("JwtSettings");
 var key       = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
 var issuer    = jwtSection["Issuer"];
 var audience  = jwtSection["Audience"];
-
 // 4) Authentication & JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
@@ -52,12 +53,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Backend Services
+builder.Services.AddScoped<IAgentAdminService, AgentAdminService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAgentTicketsService, AgentTicketsService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INumeratorService, NumeratorService>();
+builder.Services.AddScoped<IServicesService, ServicesService>();
 var app = builder.Build();
 
 // 6) Middleware
 app.UseCors();
 
-app.UseAuthentication();   // <<— JWT devrede
+app.UseAuthentication();   
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
