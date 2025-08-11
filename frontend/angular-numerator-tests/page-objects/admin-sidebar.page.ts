@@ -9,7 +9,7 @@ export class AdminSidebarPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.dashboardLink = this.page.getByRole("link", { name: "Dashboard" });
+    this.dashboardLink = this.page.getByRole("link", { name: "Dashboard", exact:true });
     this.servicesManagementLink = this.page.getByRole("link", {
       name: "Service Management",
     });

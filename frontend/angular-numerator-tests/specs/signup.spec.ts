@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { SingupPage } from "../page-objects/signup.page";
 import { initializePageObject, BASE_URL } from "../utils/testSetup";
+import { uniq, uniqueEmail } from "../utils/random";
 
 test.describe.serial("Sign Up POM", () => {
   let signupPage: SingupPage;
@@ -21,15 +22,22 @@ test.describe.serial("Sign Up POM", () => {
     expect(error).toBe("All fields are required.");
   });
 
-  test("Navigate to login page after signup ", async ({page}) => {
-    await signupPage.signup("newUserTest2", "newusertestt@mail.com", "123456");
+  test("Navigate to login page after signup", async ({ page }) => {
+    const username = uniq("usr");
+    const email = uniqueEmail("usr");
+    const password = "P@ssw0rd123!";
+
+    await signupPage.signup(username, email, password);
     await expect(page).toHaveURL(`${BASE_URL}/login`);
   });
 
-  test("Invalid email format" , async () => {
-    await signupPage.signup("abc" , "invalidusermail", "123");
+  test("Invalid email format", async () => {
+    const username = uniq("badmail");
+    const email = `${uniq("bad")}invalid`; 
+    const password = "123456";
+
+    await signupPage.signup(username, email, password);
     const error = await signupPage.getErrorMessage();
     expect(error).toBe("Invalid email address.");
-  })
-  
+  });
 });
