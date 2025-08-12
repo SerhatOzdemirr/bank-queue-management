@@ -36,11 +36,8 @@
           <button class="reject-btn" *ngIf="t.status === 'Pending'" (click)="reject(t)">
             Reject
           </button>
-          <button class="release-btn" *ngIf="t.status === 'Pending'" (click)="release(t)">
-            Release
-          </button>
           <button class="route-btn" *ngIf="t.status === 'Pending'" (click)="showRoutingList(t)">
-            Route
+            Assign
           </button>
         </td>
       </tr>

@@ -57,6 +57,21 @@ public class AgentTicketsService : IAgentTicketsService
             .SingleOrDefaultAsync(t => t.TicketId == ticketId && t.AgentId == agentId);
         if (assignment == null) throw new KeyNotFoundException();
         assignment.Status = "Accepted";
+
+        
+        var ticket = await _ctx.Tickets
+            .AsNoTracking()
+            .SingleOrDefaultAsync(t => t.Id == ticketId);
+        if (ticket == null) throw new KeyNotFoundException();
+
+        var serviceKey = ticket.ServiceKey;
+        var counter = await _ctx.Counters
+            .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
+        if (counter != null && counter.CurrentNumber > 0)
+        {
+            counter.CurrentNumber--;
+            _ctx.Counters.Update(counter);
+        }
         await _ctx.SaveChangesAsync();
     }
 
@@ -91,6 +106,15 @@ public class AgentTicketsService : IAgentTicketsService
             Status = "Pending"
         };
         _ctx.TicketAssignments.Add(newAssignment);
+
+        var serviceKey = ticket.ServiceKey;
+        var counter = await _ctx.Counters
+            .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
+        if (counter != null && counter.CurrentNumber > 0)
+        {
+            counter.CurrentNumber--;
+            _ctx.Counters.Update(counter);
+        }
         await _ctx.SaveChangesAsync();
     }
 

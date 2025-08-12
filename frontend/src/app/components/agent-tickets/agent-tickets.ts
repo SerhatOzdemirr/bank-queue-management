@@ -62,15 +62,6 @@ export class AgentTickets implements OnInit {
     });
   }
 
-  release(ticket: TicketAssignment) {
-    this.agentSvc.release(ticket.ticketId).subscribe({
-      next: () =>
-        (this.tickets = this.tickets.filter(
-          (t) => t.ticketId !== ticket.ticketId
-        )),
-      error: () => (this.error = "Error release process"),
-    });
-  }
 
   format(dt: string) {
     return this.datePipe.transform(dt, "short") ?? dt;
