@@ -27,6 +27,9 @@
     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/agents">
       Create Agent
     </a>
+     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/users">
+      List All Users
+    </a>
 
     <!-- Agent Tickets -->
     <a *ngIf="auth.isLoggedIn() && auth.isAgent()" routerLink="/agent/tickets">

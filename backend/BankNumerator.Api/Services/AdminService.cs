@@ -20,11 +20,11 @@ public sealed class AdminService : IAdminService
             .AsNoTracking()
             .Select(s => new ServiceDto
             {
-                Id            = s.Id,
-                ServiceKey    = s.Key,
-                Label         = s.Label,
-                IsActive      = s.IsActive,
-                MaxNumber     = s.MaxNumber,
+                Id = s.Id,
+                ServiceKey = s.Key,
+                Label = s.Label,
+                IsActive = s.IsActive,
+                MaxNumber = s.MaxNumber,
                 CurrentNumber = _ctx.Counters
                                    .Where(c => c.ServiceKey == s.Key)
                                    .Select(c => c.CurrentNumber)
@@ -46,9 +46,9 @@ public sealed class AdminService : IAdminService
 
         var entity = new ServiceItem
         {
-            Key       = dto.ServiceKey.Trim(),
-            Label     = dto.Label.Trim(),
-            IsActive  = dto.IsActive,
+            Key = dto.ServiceKey.Trim(),
+            Label = dto.Label.Trim(),
+            IsActive = dto.IsActive,
             MaxNumber = dto.MaxNumber
         };
 
@@ -58,11 +58,11 @@ public sealed class AdminService : IAdminService
         // Yeni servis → CurrentNumber = 0
         return new ServiceDto
         {
-            Id            = entity.Id,
-            ServiceKey    = entity.Key,
-            Label         = entity.Label,
-            IsActive      = entity.IsActive,
-            MaxNumber     = entity.MaxNumber,
+            Id = entity.Id,
+            ServiceKey = entity.Key,
+            Label = entity.Label,
+            IsActive = entity.IsActive,
+            MaxNumber = entity.MaxNumber,
             CurrentNumber = 0
         };
     }
@@ -72,9 +72,9 @@ public sealed class AdminService : IAdminService
         var service = await _ctx.Services.FindAsync([id], ct);
         if (service is null) throw new KeyNotFoundException("Service not found.");
 
-        service.Key       = dto.ServiceKey?.Trim() ?? service.Key;
-        service.Label     = dto.Label?.Trim() ?? service.Label;
-        service.IsActive  = dto.IsActive;
+        service.Key = dto.ServiceKey?.Trim() ?? service.Key;
+        service.Label = dto.Label?.Trim() ?? service.Label;
+        service.IsActive = dto.IsActive;
         service.MaxNumber = dto.MaxNumber;
 
         await _ctx.SaveChangesAsync(ct);
@@ -101,12 +101,12 @@ public sealed class AdminService : IAdminService
             .OrderByDescending(t => t.TakenAt)
             .Select(t => new TicketDto
             {
-                Number       = t.Number,
-                ServiceKey   = t.ServiceKey,
+                Number = t.Number,
+                ServiceKey = t.ServiceKey,
                 ServiceLabel = t.ServiceLabel,
-                TakenAt      = t.TakenAt,
-                UserId       = t.UserId,
-                Username     = t.User.Username
+                TakenAt = t.TakenAt,
+                UserId = t.UserId,
+                Username = t.User.Username
             })
             .ToListAsync(ct);
 
@@ -133,5 +133,25 @@ public sealed class AdminService : IAdminService
         await _ctx.Tickets
             .Where(t => t.Id == ticket.Id)
             .ExecuteDeleteAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<UserSummaryDto>> GetAllUsers(CancellationToken ct = default)
+    {
+        var userList = await _ctx.Users.AsNoTracking()
+        .Select(u => new UserSummaryDto(u.Id, u.Username, u.Email, u.PriorityScore))
+        .ToListAsync(ct);
+        return userList;
+    }
+    public async Task UpdateUserPriorityAsync(int userId, int score, CancellationToken ct = default)
+    {
+        if (score < 1 || score > 5)
+            throw new ArgumentOutOfRangeException(nameof(score), "Priority score must be between 1 and 5");
+
+        var user = await _ctx.Users.FindAsync(new object[] { userId }, ct);
+        if (user == null)
+            throw new KeyNotFoundException("User not found");
+
+        user.PriorityScore = score;
+        await _ctx.SaveChangesAsync(ct);
     }
 }

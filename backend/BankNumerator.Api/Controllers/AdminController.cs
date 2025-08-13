@@ -76,5 +76,20 @@ namespace BankNumerator.Api.Controllers
             }
             catch (KeyNotFoundException) { return NotFound(); }
         }
+
+        // GET /api/admin/users
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers(CancellationToken ct)
+        {
+            var users = await _svc.GetAllUsers(ct);
+            return Ok(users);
+        }
+        
+        [HttpPut("users/{id}/priority")]
+        public async Task<IActionResult> UpdateUserPriority(int id, [FromBody] UpdatePriorityDto dto, CancellationToken ct)
+        {
+            await _svc.UpdateUserPriorityAsync(id, dto.Score, ct);
+            return NoContent();
+        }
     }
 }

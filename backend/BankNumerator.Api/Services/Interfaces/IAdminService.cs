@@ -11,4 +11,8 @@ public interface IAdminService
 
     Task<IReadOnlyList<TicketDto>> GetAllTicketsAsync(string? serviceKey, CancellationToken ct = default);
     Task CancelTicketByCompositeAsync(string serviceKey, int number, CancellationToken ct = default);
+
+    Task<IReadOnlyList<UserSummaryDto>> GetAllUsers(CancellationToken ct = default);
+    Task UpdateUserPriorityAsync(int userId, int score, CancellationToken ct = default);
+
 }

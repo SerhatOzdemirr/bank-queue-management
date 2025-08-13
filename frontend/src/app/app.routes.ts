@@ -65,6 +65,14 @@ export const routes: Routes = [
           ),
         data: { hideSidebar: true },
       },
+      {
+        path: "users",
+        loadComponent: () =>
+          import("./components/admin-users/admin-users").then(
+            (m) => m.AdminUsers
+          ),
+        data: { hideSidebar: true },
+      },
     ],
   },
 

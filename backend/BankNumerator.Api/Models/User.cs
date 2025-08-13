@@ -23,3 +23,5 @@ namespace BankNumerator.Api.Models
 public record UserDto(string Username, string Email, string Password);
 public record LoginDto(string Email, string Password);
 
+public sealed record UserSummaryDto(int Id, string Username, string Email, int PriorityScore);
+public sealed record UpdatePriorityDto(int Score);
