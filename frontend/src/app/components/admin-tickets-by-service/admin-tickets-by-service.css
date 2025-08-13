@@ -1,0 +1,17 @@
+.card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.chart {
+  position: relative;
+  height: 200px;
+}

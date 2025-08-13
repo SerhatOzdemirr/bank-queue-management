@@ -35,6 +35,14 @@ export const routes: Routes = [
         (m) => m.AdminDashboard
       ),
     children: [
+      { path: "", redirectTo: "dashboard", pathMatch: "full" },
+      {
+        path: "dashboard",
+        loadComponent: () =>
+          import(
+            "./components/admin-charts-page/admin-charts-page"
+          ).then((m) => m.AdminChartsPage),
+      },
       {
         path: "services",
         loadComponent: () =>

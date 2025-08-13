@@ -60,6 +60,8 @@ builder.Services.AddScoped<IAgentTicketsService, AgentTicketsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INumeratorService, NumeratorService>();
 builder.Services.AddScoped<IServicesService, ServicesService>();
+builder.Services.AddScoped<IAdminStatsService, AdminStatsService>();
+
 var app = builder.Build();
 
 // 6) Middleware

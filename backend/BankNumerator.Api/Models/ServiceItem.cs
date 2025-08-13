@@ -25,4 +25,8 @@ namespace BankNumerator.Api.Models
         public int CurrentNumber { get; set; }
         public int Priority { get; set; }
     }
+
+
+    public sealed record ServiceCountItem(string ServiceLabel, int Count);
+
 }

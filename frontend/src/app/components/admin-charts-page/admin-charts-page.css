@@ -1,0 +1,10 @@
+.container{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.chart-item{
+    width: 300px;
+    height: 300px;
+}

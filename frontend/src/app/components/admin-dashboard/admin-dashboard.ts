@@ -14,7 +14,7 @@ import { filter } from "rxjs/operators";
 @Component({
   standalone: true,
   selector: "app-admin-dashboard",
-  imports: [CommonModule, RouterModule, AdminSidebar],
+  imports: [CommonModule, RouterModule, AdminSidebar ],
   templateUrl: "./admin-dashboard.html",
   styleUrls: ["./admin-dashboard.css"],
 })
