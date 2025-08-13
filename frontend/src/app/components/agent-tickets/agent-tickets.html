@@ -7,6 +7,7 @@
     <thead>
       <tr>
         <th>#</th>
+        <th>Priority Level</th>
         <th>Service</th>
         <th>Taken At</th>
         <th>Assigned At</th>
@@ -19,24 +20,40 @@
       <tr
         *ngFor="let t of tickets; trackBy: trackById"
         [ngClass]="{
-          'high-priority': t.priority >= 1,
-          'high-priority-top': t.priority >= 2
+          'high-priority-5': t.effectivePriority === 5,
+          'high-priority-4': t.effectivePriority === 4,
+          'high-priority-3': t.effectivePriority === 3,
+          'high-priority-2': t.effectivePriority === 2,
+          'high-priority-1': t.effectivePriority === 1
         }"
       >
         <td>{{ t.number }}</td>
+        <td>{{ t.effectivePriority }}</td>
         <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
         <td>{{ format(t.takenAt) }}</td>
         <td>{{ format(t.assignedAt) }}</td>
         <td>{{ t.status }}</td>
         <td>{{ t.username }}</td>
         <td>
-          <button class="accept-btn" *ngIf="t.status === 'Pending'" (click)="accept(t)">
+          <button
+            class="accept-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="accept(t)"
+          >
             Accept
           </button>
-          <button class="reject-btn" *ngIf="t.status === 'Pending'" (click)="reject(t)">
+          <button
+            class="reject-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="reject(t)"
+          >
             Reject
           </button>
-          <button class="route-btn" *ngIf="t.status === 'Pending'" (click)="showRoutingList(t)">
+          <button
+            class="route-btn"
+            *ngIf="t.status === 'Pending'"
+            (click)="showRoutingList(t)"
+          >
             Assign
           </button>
         </td>

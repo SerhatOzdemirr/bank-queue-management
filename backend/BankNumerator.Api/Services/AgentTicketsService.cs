@@ -24,18 +24,15 @@ public class AgentTicketsService : IAgentTicketsService
 
     public async Task<IEnumerable<object>> GetMyTicketsAsync(int agentId)
     {
-        return await _ctx.TicketAssignments
+        var now = DateTime.UtcNow;
+        const int AgingStepMinutes = 5;
+        const int MaxPriority = 5;
+
+        var list = await _ctx.TicketAssignments
             .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
-            .Join(_ctx.Tickets,
-                  ta => ta.TicketId,
-                  t => t.Id,
-                  (ta, t) => new { ta, t })
-            .Join(_ctx.Users,
-                  tt => tt.t.UserId,
-                  u => u.Id,
-                  (tt, u) => new { tt.ta, tt.t, u })
-            .OrderByDescending(x => x.u.PriorityScore)
-            .ThenBy(x => x.ta.AssignedAt)
+            .Join(_ctx.Tickets, ta => ta.TicketId, t => t.Id, (ta, t) => new { ta, t })
+            .Join(_ctx.Users, tt => tt.t.UserId, u => u.Id, (tt, u) => new { tt.ta, tt.t, u })
+            .AsNoTracking()
             .Select(x => new
             {
                 ticketId = x.t.Id,
@@ -45,12 +42,31 @@ public class AgentTicketsService : IAgentTicketsService
                 takenAt = x.t.TakenAt,
                 assignedAt = x.ta.AssignedAt,
                 status = x.ta.Status,
-                priority = x.u.PriorityScore,
+                basePriority = x.u.PriorityScore,
+                waitingMinutes = (int)((now - x.ta.AssignedAt).TotalMinutes),
                 username = x.u.Username
             })
+            .Select(x => new
+            {
+                x.ticketId,
+                x.number,
+                x.serviceKey,
+                x.serviceLabel,
+                x.takenAt,
+                x.assignedAt,
+                x.status,
+                username = x.username,
+                effectivePriority = Math.Min(
+                    MaxPriority,
+                    x.basePriority + (x.waitingMinutes / AgingStepMinutes)
+                )
+            })
+            .OrderByDescending(x => x.effectivePriority)
+            .ThenBy(x => x.assignedAt)
             .ToListAsync();
-    }
 
+        return list;
+}
     public async Task AcceptAsync(int agentId, int ticketId)
     {
         var assignment = await _ctx.TicketAssignments
@@ -175,18 +191,14 @@ public class AgentTicketsService : IAgentTicketsService
     }
 
     public async Task<IEnumerable<object>> GetRouteCandidatesAsync(int agentId, string serviceKey)
-    {
-        return await _ctx.AgentSkills
-            .Where(s => s.ServiceKey == serviceKey)
-            .Join(_ctx.Agents,
-                s => s.AgentId,
-                a => a.Id,
-                (s, a) => new { a.Id, a.UserId })
-            .Join(_ctx.Users,
-                x => x.UserId,
-                u => u.Id,
-                (x, u) => new { AgentId = x.Id, Username = u.Username })
-            .Distinct()
-            .ToListAsync();
-    }
+{
+    return await _ctx.AgentSkills
+        .Where(s => s.ServiceKey == serviceKey)
+        .Join(_ctx.Agents, s => s.AgentId, a => a.Id, (s, a) => new { a.Id, a.UserId })
+        .Where(x => x.Id != agentId) 
+        .Join(_ctx.Users, x => x.UserId, u => u.Id, (x, u) => new { AgentId = x.Id, Username = u.Username })
+        .Distinct()
+        .ToListAsync();
+}
+
 }

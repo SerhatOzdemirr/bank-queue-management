@@ -12,7 +12,7 @@ export interface TicketAssignment {
   takenAt: string;
   assignedAt: string;
   status: "Pending" | "Accepted" | "Rejected";
-  priority: number;
+  effectivePriority: number;
   username: string;
 }
 export interface RouteCandidate {
@@ -36,9 +36,6 @@ export class AgentService {
     return this.http.post<void>(`${this.base}/${ticketId}/reject`, {});
   }
 
-  release(ticketId: number): Observable<void> {
-    return this.http.post<void>(`${this.base}/${ticketId}/release`, {});
-  }
   route(ticketId: number, toAgentId: number): Observable<void> {
     return this.http.post<void>(
       `${this.base}/${ticketId}/route/${toAgentId}`,

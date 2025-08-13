@@ -6,7 +6,7 @@ import {
   RouteCandidate,
 } from "../../services/agent.service";
 import { DatePipe } from "@angular/common";
-
+import { timer, switchMap, Subject, takeUntil } from "rxjs";
 @Component({
   standalone: true,
   selector: "app-agent-tickets",
@@ -19,7 +19,7 @@ export class AgentTickets implements OnInit {
   tickets: TicketAssignment[] = [];
   loading = false;
   error: string | null = null;
-
+  private firstLoad = true;
   showModal = false;
   modalCandidates: RouteCandidate[] = [];
   selectedForRouting: TicketAssignment | null = null;
@@ -29,21 +29,34 @@ export class AgentTickets implements OnInit {
 
   private agentSvc = inject(AgentService);
   private datePipe = inject(DatePipe);
-
+  private destroy$ = new Subject<void>();
   ngOnInit() {
-    this.load();
+    timer(0, 30000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.load());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   load() {
-    this.loading = true;
+    if (this.firstLoad) {
+      this.loading = true;
+    }
     this.agentSvc.getMyTickets().subscribe({
       next: (list) => {
         this.tickets = list;
         this.loading = false;
+        this.firstLoad = false;
       },
       error: () => {
-        this.error = "Assignment list cannot loaded";
+        this.error = "Assignment list cannot be loaded";
         this.loading = false;
+        this.firstLoad = false;
+
+        setTimeout(() => (this.error = null), 4000);
       },
     });
   }
@@ -62,7 +75,6 @@ export class AgentTickets implements OnInit {
     });
   }
 
-
   format(dt: string) {
     return this.datePipe.transform(dt, "short") ?? dt;
   }
@@ -79,6 +91,7 @@ export class AgentTickets implements OnInit {
       return;
     }
 
+    
     this.agentSvc.route(ticket.ticketId, toAgentId).subscribe({
       next: () => {
         this.tickets = this.tickets.filter(
