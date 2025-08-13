@@ -9,6 +9,7 @@ export interface UserSummaryDto {
   username: string;
   email: string;
   priorityScore: number;
+  role : string;
 }
 
 @Injectable({ providedIn: "root" })

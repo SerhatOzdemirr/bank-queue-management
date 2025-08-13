@@ -3,38 +3,42 @@
 
 <div class="table-responsive" *ngIf="!loading && !error">
   <table class="table table-sm table-striped">
-    <thead>
-      <tr>
-        <th>User Id</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Priority</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let u of users; let i = index">
-        <td>{{ u.id }}</td>
-        <td>{{ u.username }}</td>
-        <td>{{ u.email }}</td>
-        <td>
-          <input
-            type="number"
-            min="1"
-            max="5"
-            [value]="u.priorityScore"
-            (change)="updatePriority(u.id, $any($event.target).value)"
-          />
-        </td>
-        <td>
-          <button
-            class="btn btn-sm btn-save"
-            (click)="updatePriority(u.id, u.priorityScore)"
-          >
-            Save
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>User Id</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Priority</th>
+      <th>User Role</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let u of users; let i = index">
+      <td>{{ u.id }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>
+        <input
+          type="number"
+          min="1"
+          max="5"
+          [value]="u.priorityScore"
+          class="form-control form-control-sm"
+        />
+      </td>
+      <td>{{ u.role }}</td>
+      <td>
+        <button
+          class="btn btn-sm btn-save"
+          (click)="updatePriority(u.id, u.priorityScore)"
+        >
+          Save
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
   <div *ngIf="!users.length" class="p-2">Kayıt bulunamadı.</div>
 </div>

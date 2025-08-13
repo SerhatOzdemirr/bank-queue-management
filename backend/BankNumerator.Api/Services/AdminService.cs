@@ -142,7 +142,7 @@ public async Task DeleteServiceAsync(int id, CancellationToken ct = default)
     public async Task<IReadOnlyList<UserSummaryDto>> GetAllUsers(CancellationToken ct = default)
     {
         var userList = await _ctx.Users.AsNoTracking()
-        .Select(u => new UserSummaryDto(u.Id, u.Username, u.Email, u.PriorityScore))
+        .Select(u => new UserSummaryDto(u.Id, u.Username, u.Email, u.PriorityScore , u.Role.ToString()))
         .ToListAsync(ct);
         return userList;
     }
