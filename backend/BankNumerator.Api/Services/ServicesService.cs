@@ -11,25 +11,26 @@ namespace BankNumerator.Api.Services
 
         public ServicesService(BankNumeratorContext ctx) => _ctx = ctx;
 
-      public async Task<IReadOnlyList<ServiceDto>> GetAllAsync(CancellationToken ct = default)
-{
-    var query =
-        from s in _ctx.Services.AsNoTracking()
-        where s.IsActive
-        join c in _ctx.Counters.AsNoTracking()
-            on s.Key equals c.ServiceKey into gj
-        select new ServiceDto
+        public async Task<IReadOnlyList<ServiceDto>> GetAllAsync(CancellationToken ct = default)
         {
-            Id           = s.Id,
-            ServiceKey   = s.Key,
-            Label        = s.Label,
-            IsActive     = s.IsActive,
-            MaxNumber    = s.MaxNumber,
-            CurrentNumber = gj.Max(x => (int?)x.CurrentNumber) ?? 0
-        };
+            var query =
+                from s in _ctx.Services.AsNoTracking()
+                where s.IsActive
+                orderby s.Priority descending , s.Label ascending
+                join c in _ctx.Counters.AsNoTracking()
+                    on s.Key equals c.ServiceKey into gj
+                select new ServiceDto
+                {
+                    Id           = s.Id,
+                    ServiceKey   = s.Key,
+                    Label        = s.Label,
+                    IsActive     = s.IsActive,
+                    MaxNumber    = s.MaxNumber,
+                    Priority     = s.Priority,
+                    CurrentNumber = gj.Max(x => (int?)x.CurrentNumber) ?? 0
+                };
 
-    return await query.ToListAsync(ct);
-}
-
+            return await query.ToListAsync(ct);
+        }
     }
 }

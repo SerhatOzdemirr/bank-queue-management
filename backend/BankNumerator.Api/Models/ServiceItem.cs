@@ -9,6 +9,7 @@ namespace BankNumerator.Api.Models
         public string Label { get; set; } = default!;
         public bool IsActive { get; set; } = true;
 
+        public int Priority { get; set; } = 3;
         public int MaxNumber { get; set; } = 100;
     }
 
@@ -22,5 +23,6 @@ namespace BankNumerator.Api.Models
         public int MaxNumber { get; set; }
         [JsonPropertyName("currentNumber")]
         public int CurrentNumber { get; set; }
+        public int Priority { get; set; }
     }
 }

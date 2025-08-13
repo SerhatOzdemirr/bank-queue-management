@@ -100,7 +100,7 @@ namespace BankNumerator.Api.Services
         public async Task<bool> CancelTicketAsync(string serviceKey, int number, int userId)
         {
             var ticket = await _ctx.Tickets
-                .SingleOrDefaultAsync(t =>
+                .FirstOrDefaultAsync(t =>
                     t.ServiceKey == serviceKey &&
                     t.Number == number &&
                     t.UserId == userId);
@@ -109,7 +109,7 @@ namespace BankNumerator.Api.Services
                 return false;
 
             var counter = await _ctx.Counters
-                .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
+                .FirstOrDefaultAsync(c => c.ServiceKey == serviceKey);
             if (counter != null && counter.CurrentNumber > 0)
             {
                 counter.CurrentNumber--;

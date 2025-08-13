@@ -6,4 +6,5 @@ export interface ServiceItem {
   isActive: boolean;
   maxNumber: number;
   currentNumber: number;
+  priority : number;
 }

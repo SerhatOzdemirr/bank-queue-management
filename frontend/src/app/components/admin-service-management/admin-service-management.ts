@@ -1,33 +1,34 @@
 // src/app/components/admin-service-management/service-management.component.ts
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
-import { AdminService } from '../../services/admin.service';
-import { ServiceItem } from '../../services/service-item';
+import { AdminService } from "../../services/admin.service";
+import { ServiceItem } from "../../services/service-item";
 
 @Component({
   standalone: true,
-  selector: 'app-service-management',
+  selector: "app-service-management",
   imports: [CommonModule, FormsModule],
-  templateUrl: './admin-service-management.html',
-  styleUrls: ['./admin-service-management.css'],
+  templateUrl: "./admin-service-management.html",
+  styleUrls: ["./admin-service-management.css"],
 })
 export class ServiceManagementComponent implements OnInit {
   services: ServiceItem[] = [];
-
+  updatedPriority = 3; // NEW
+  addedPriority = 3;
   /* ---------- Edit modal state ---------- */
   editModalVisible = false;
   private serviceToEdit?: ServiceItem;
-  updatedKey = '';
-  updatedLabel = '';
+  updatedKey = "";
+  updatedLabel = "";
   updatedActive = true;
   updatedMax = 100;
 
   /* ---------- Add modal state ---------- */
   addModalVisible = false;
-  addedKey = '';
-  addedLabel = '';
+  addedKey = "";
+  addedLabel = "";
   addedActive = true;
   addedMax = 100;
 
@@ -42,8 +43,12 @@ export class ServiceManagementComponent implements OnInit {
   /* ---------- Data ---------- */
   private loadServices(): void {
     this.adminService.getServices().subscribe({
-      next: list => (this.services = list),
-      error: err => console.error('Failed to load services', err),
+      next: (list) => {
+        this.services = [...list].sort(
+          (a, b) => b.priority - a.priority || a.label.localeCompare(b.label)
+        );
+      },
+      error: (err) => console.error("Failed to load services", err),
     });
   }
 
@@ -58,14 +63,14 @@ export class ServiceManagementComponent implements OnInit {
       })
       .subscribe({
         next: () => this.loadServices(),
-        error: err => console.error('Update failed', err),
+        error: (err) => console.error("Update failed", err),
       });
   }
 
   setMaxNumber(svc: ServiceItem): void {
     const parsed = parseInt(
-      prompt('Set Max Number:', svc.maxNumber.toString()) ?? '',
-      10,
+      prompt("Set Max Number:", svc.maxNumber.toString()) ?? "",
+      10
     );
     const maxNumber = isNaN(parsed) ? svc.maxNumber : parsed;
 
@@ -78,7 +83,7 @@ export class ServiceManagementComponent implements OnInit {
       })
       .subscribe({
         next: () => this.loadServices(),
-        error: err => console.error('Set max failed', err),
+        error: (err) => console.error("Set max failed", err),
       });
   }
 
@@ -86,7 +91,7 @@ export class ServiceManagementComponent implements OnInit {
     if (!confirm(`Delete service "${svc.label}"?`)) return;
     this.adminService.deleteService(svc.id).subscribe({
       next: () => this.loadServices(),
-      error: err => console.error('Delete failed', err),
+      error: (err) => console.error("Delete failed", err),
     });
   }
 
@@ -97,6 +102,7 @@ export class ServiceManagementComponent implements OnInit {
     this.updatedLabel = svc.label;
     this.updatedActive = svc.isActive;
     this.updatedMax = svc.maxNumber;
+    this.updatedPriority = svc.priority;
     this.editModalVisible = true;
   }
 
@@ -109,13 +115,14 @@ export class ServiceManagementComponent implements OnInit {
         label: this.updatedLabel.trim(),
         isActive: this.updatedActive,
         maxNumber: this.updatedMax,
+        priority : this.updatedPriority,
       })
       .subscribe({
         next: () => {
           this.editModalVisible = false;
           this.loadServices();
         },
-        error: err => console.error('Save edit failed', err),
+        error: (err) => console.error("Save edit failed", err),
       });
   }
 
@@ -126,12 +133,12 @@ export class ServiceManagementComponent implements OnInit {
 
   /* ---------- Add modal ---------- */
   showAddModal(): void {
-    this.addedKey = '';
-    this.addedLabel = '';
+    this.addedKey = "";
+    this.addedLabel = "";
     this.addedActive = true;
     this.addedMax = 100;
+    this.addedPriority = 3;
     this.addModalVisible = true;
-    
   }
 
   saveAdd(): void {
@@ -141,13 +148,14 @@ export class ServiceManagementComponent implements OnInit {
         label: this.addedLabel.trim(),
         isActive: this.addedActive,
         maxNumber: this.addedMax,
+        priority : this.addedPriority,
       })
       .subscribe({
         next: () => {
           this.addModalVisible = false;
           this.loadServices();
         },
-        error: err => console.error('Add failed', err),
+        error: (err) => console.error("Add failed", err),
       });
   }
 

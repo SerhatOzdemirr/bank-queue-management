@@ -69,8 +69,9 @@ export class Numerator implements OnInit {
   ngOnInit() {
     this.svcApi.getAll().subscribe({
       next: (list) => {
+        // yüksek öncelik önce
         this.services = list;
-        if (list.length) this.selectedService = list[0].serviceKey;
+        if (list.length) this.selectedService = this.services[0].serviceKey;
       },
       error: (err) => console.error("Service fetch error", err),
     });

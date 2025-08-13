@@ -15,9 +15,10 @@ public sealed class AdminService : IAdminService
 
     public async Task<IReadOnlyList<ServiceDto>> GetServicesAsync(CancellationToken ct = default)
     {
-        // Projection + AsNoTracking + tek round-trip
         var list = await _ctx.Services
             .AsNoTracking()
+            .OrderByDescending(s => s.Priority)     // NEW: yüksek öncelik önce
+            .ThenBy(s => s.Label)
             .Select(s => new ServiceDto
             {
                 Id = s.Id,
@@ -25,62 +26,65 @@ public sealed class AdminService : IAdminService
                 Label = s.Label,
                 IsActive = s.IsActive,
                 MaxNumber = s.MaxNumber,
+                Priority = s.Priority,              // NEW
                 CurrentNumber = _ctx.Counters
-                                   .Where(c => c.ServiceKey == s.Key)
-                                   .Select(c => c.CurrentNumber)
-                                   .FirstOrDefault()
+                    .Where(c => c.ServiceKey == s.Key)
+                    .Select(c => c.CurrentNumber)
+                    .FirstOrDefault()
             })
             .ToListAsync(ct);
 
         return list;
     }
+  public async Task<ServiceDto> AddServiceAsync(ServiceDto dto, CancellationToken ct = default)
+{
+    if (string.IsNullOrWhiteSpace(dto.ServiceKey) || string.IsNullOrWhiteSpace(dto.Label))
+        throw new ArgumentException("Key and Label are required");
 
-    public async Task<ServiceDto> AddServiceAsync(ServiceDto dto, CancellationToken ct = default)
+    if (dto.Priority < 1 || dto.Priority > 5)
+        throw new ArgumentOutOfRangeException(nameof(dto.Priority), "Priority must be 1..5");
+
+    var entity = new ServiceItem
     {
-        if (string.IsNullOrWhiteSpace(dto.ServiceKey) || string.IsNullOrWhiteSpace(dto.Label))
-            throw new ArgumentException("Key and Label are required");
+        Key = dto.ServiceKey.Trim(),
+        Label = dto.Label.Trim(),
+        IsActive = dto.IsActive,
+        MaxNumber = dto.MaxNumber,
+        Priority = dto.Priority                 // NEW
+    };
 
-        // Key tekillik kontrolü (varsa ekleyebilirsin)
-        // if (await _ctx.Services.AnyAsync(s => s.Key == dto.ServiceKey, ct))
-        //     throw new InvalidOperationException("Service key already exists.");
+    _ctx.Services.Add(entity);
+    await _ctx.SaveChangesAsync(ct);
 
-        var entity = new ServiceItem
-        {
-            Key = dto.ServiceKey.Trim(),
-            Label = dto.Label.Trim(),
-            IsActive = dto.IsActive,
-            MaxNumber = dto.MaxNumber
-        };
-
-        _ctx.Services.Add(entity);
-        await _ctx.SaveChangesAsync(ct);
-
-        // Yeni servis → CurrentNumber = 0
-        return new ServiceDto
-        {
-            Id = entity.Id,
-            ServiceKey = entity.Key,
-            Label = entity.Label,
-            IsActive = entity.IsActive,
-            MaxNumber = entity.MaxNumber,
-            CurrentNumber = 0
-        };
-    }
+    return new ServiceDto
+    {
+        Id = entity.Id,
+        ServiceKey = entity.Key,
+        Label = entity.Label,
+        IsActive = entity.IsActive,
+        MaxNumber = entity.MaxNumber,
+        Priority = entity.Priority,             // NEW
+        CurrentNumber = 0
+    };
+}
 
     public async Task UpdateServiceAsync(int id, ServiceDto dto, CancellationToken ct = default)
     {
         var service = await _ctx.Services.FindAsync([id], ct);
         if (service is null) throw new KeyNotFoundException("Service not found.");
 
+        if (dto.Priority is < 1 or > 5)
+            throw new ArgumentOutOfRangeException(nameof(dto.Priority), "Priority must be 1..5");
+
         service.Key = dto.ServiceKey?.Trim() ?? service.Key;
         service.Label = dto.Label?.Trim() ?? service.Label;
         service.IsActive = dto.IsActive;
         service.MaxNumber = dto.MaxNumber;
+        service.Priority = dto.Priority;           // NEW
 
         await _ctx.SaveChangesAsync(ct);
-    }
-
-    public async Task DeleteServiceAsync(int id, CancellationToken ct = default)
+    }    
+public async Task DeleteServiceAsync(int id, CancellationToken ct = default)
     {
         var service = await _ctx.Services.FindAsync([id], ct);
         if (service is null) throw new KeyNotFoundException("Service not found.");

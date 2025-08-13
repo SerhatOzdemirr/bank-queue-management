@@ -11,6 +11,7 @@
         <tr>
           <th>Key</th>
           <th>Label</th>
+          <th>Priority</th>
           <th>Active</th>
           <th>Max #</th>
           <th>Actions</th>
@@ -19,7 +20,18 @@
       <tbody>
         <tr *ngFor="let svc of services">
           <td>{{ svc.serviceKey }}</td>
-          <td>{{ svc.label }}</td>
+          <td>
+            {{ svc.label }}
+            <span
+              class="prio-badge"
+              [class.high]="svc.priority >= 4"
+              [class.low]="svc.priority <= 2"
+            >
+              P{{ svc.priority }}
+            </span>
+          </td>
+          <td>{{ svc.priority }}</td>
+          <!-- NEW -->
           <td>
             <input
               class="active-checkbox"
@@ -47,18 +59,24 @@
   <div class="modal-backdrop" *ngIf="editModalVisible">
     <div class="modal" id="edit-modal">
       <h4>Edit Service</h4>
-
       <label>Key:<br /><input [(ngModel)]="updatedKey" /></label>
       <label>Label:<br /><input [(ngModel)]="updatedLabel" /></label>
       <label
         >Max #:<br /><input type="number" [(ngModel)]="updatedMax"
       /></label>
+      <label
+        >Priority (1-5):<br /><input
+          type="number"
+          min="1"
+          max="5"
+          [(ngModel)]="updatedPriority"
+      /></label>
+      <!-- NEW -->
       <div class="checbox-div">
         <label
           >Active:<br /><input type="checkbox" [(ngModel)]="updatedActive"
         /></label>
       </div>
-
       <div class="modal-actions">
         <button class="btn" (click)="saveEdit()">Save</button>
         <button class="btn danger" (click)="cancelEdit()">Cancel</button>
@@ -70,11 +88,17 @@
   <div class="modal-backdrop" *ngIf="addModalVisible">
     <div class="modal" id="add-modal">
       <h4>Add Service</h4>
-
       <label>Key:<br /><input [(ngModel)]="addedKey" /></label>
       <label>Label:<br /><input [(ngModel)]="addedLabel" /></label>
-
       <label>Max #:<br /><input type="number" [(ngModel)]="addedMax" /></label>
+      <label
+        >Priority (1-5):<br /><input
+          type="number"
+          min="1"
+          max="5"
+          [(ngModel)]="addedPriority"
+      /></label>
+      <!-- NEW -->
       <div class="checbox-div">
         <label
           >Active:<br /><input type="checkbox" [(ngModel)]="addedActive"
