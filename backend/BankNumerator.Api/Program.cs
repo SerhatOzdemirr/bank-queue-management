@@ -61,6 +61,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INumeratorService, NumeratorService>();
 builder.Services.AddScoped<IServicesService, ServicesService>();
 builder.Services.AddScoped<IAdminStatsService, AdminStatsService>();
+builder.Services.AddScoped<IAdminAgentActivityService, AdminAgentActivityService>();
 
 var app = builder.Build();
 

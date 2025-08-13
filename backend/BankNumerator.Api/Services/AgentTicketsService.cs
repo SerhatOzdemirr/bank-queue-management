@@ -91,48 +91,47 @@ public class AgentTicketsService : IAgentTicketsService
         await _ctx.SaveChangesAsync();
     }
 
-    public async Task RejectAsync(int agentId, int ticketId)
+public async Task RejectAsync(int agentId, int ticketId)
+{
+    var assignment = await _ctx.TicketAssignments
+        .SingleOrDefaultAsync(t => t.TicketId == ticketId && t.AgentId == agentId);
+    if (assignment == null) throw new KeyNotFoundException();
+
+    assignment.Status = "Rejected"; 
+
+    var ticket = await _ctx.Tickets
+        .AsNoTracking()
+        .SingleOrDefaultAsync(t => t.Id == ticketId);
+    if (ticket == null) throw new KeyNotFoundException();
+
+    var skilled = await _ctx.AgentSkills
+        .Where(s => s.ServiceKey == ticket.ServiceKey && s.AgentId != agentId) // kendini hariç tut
+        .Select(s => s.AgentId)
+        .ToListAsync();
+
+    int? newAgentId = skilled.FirstOrDefault();
+    if (newAgentId == 0) 
     {
-        var assignment = await _ctx.TicketAssignments
-            .SingleOrDefaultAsync(t => t.TicketId == ticketId && t.AgentId == agentId);
-        if (assignment == null) throw new KeyNotFoundException();
+        newAgentId = await _ctx.Agents
+            .Where(a => a.Id != agentId)
+            .Select(a => a.Id)
+            .FirstOrDefaultAsync();
 
-        var ticket = await _ctx.Tickets
-            .AsNoTracking()
-            .SingleOrDefaultAsync(t => t.Id == ticketId);
-        if (ticket == null) throw new KeyNotFoundException();
-
-        _ctx.TicketAssignments.Remove(assignment);
-        await _ctx.SaveChangesAsync();
-
-        var skilled = await _ctx.AgentSkills
-            .Where(s => s.ServiceKey == ticket.ServiceKey)
-            .Select(s => s.AgentId)
-            .ToListAsync();
-
-        int newAgentId = skilled.Any()
-            ? skilled.First()
-            : await _ctx.Agents.Select(a => a.Id).FirstAsync();
-
-        var newAssignment = new TicketAssignment
-        {
-            TicketId = ticketId,
-            AgentId = newAgentId,
-            AssignedAt = DateTime.UtcNow,
-            Status = "Pending"
-        };
-        _ctx.TicketAssignments.Add(newAssignment);
-
-        var serviceKey = ticket.ServiceKey;
-        var counter = await _ctx.Counters
-            .SingleOrDefaultAsync(c => c.ServiceKey == serviceKey);
-        if (counter != null && counter.CurrentNumber > 0)
-        {
-            counter.CurrentNumber--;
-            _ctx.Counters.Update(counter);
-        }
-        await _ctx.SaveChangesAsync();
+        if (newAgentId == 0)
+            throw new InvalidOperationException("Yönlendirilecek uygun agent bulunamadı.");
     }
+
+    var newAssignment = new TicketAssignment
+    {
+        TicketId = ticketId,
+        AgentId = newAgentId.Value,
+        AssignedAt = DateTime.UtcNow,
+        Status = "Pending"
+    };
+    _ctx.TicketAssignments.Add(newAssignment);
+
+    await _ctx.SaveChangesAsync();
+}
 
     public async Task ReleaseAsync(int agentId, int ticketId)
     {

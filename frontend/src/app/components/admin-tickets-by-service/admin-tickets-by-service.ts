@@ -69,7 +69,7 @@ export class AdminTicketsByService implements OnInit, OnDestroy {
     ).getContext("2d")!;
     this.chart = new Chart(ctx, {
       type: "bar",
-      data: { labels, datasets: [{ label: "Tickets", data: values }] },
+      data: { labels, datasets: [{ label: "Tickets", data: values , backgroundColor : "#00adb5"}] },
       options: {
         responsive: true,
         maintainAspectRatio: false,
