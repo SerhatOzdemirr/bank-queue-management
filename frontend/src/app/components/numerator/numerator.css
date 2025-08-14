@@ -26,6 +26,10 @@
   .service-card h3 , .step-item{
     font-size: 14px !important;
   }
+  .result{
+    width: 50% !important;
+
+  }
 }
 
 /* Adım çubuğu */
@@ -105,7 +109,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  width:500px; /* responsive kutu genişliği   */
+  width:400px; /* responsive kutu genişliği   */
   padding: 1.5rem 2rem; /* iç boşluk                   */
   margin: 1rem auto; /* ortala                      */
   background: var(--tertiary-color);
@@ -136,8 +140,12 @@
 }
 @media (max-width: 480px) {
   .result {
-    max-width: 90%;
-    padding: 1rem 1.25rem;
+    width: 100%;
+    font-size: small !important;
+  }
+  .btn-cancel{
+    width: 80% !important;
+    font-size: 12px;
   }
 }
 
