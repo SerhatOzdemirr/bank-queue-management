@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthService } from "../../services/auth.service";
+import { ThemeService } from "../../services/theme.service";
 
 @Component({
   standalone: true,
@@ -14,44 +15,24 @@ export class Navbar implements OnInit {
   auth = inject(AuthService);
   menuOpen = false;
   private router = inject(Router);
+  private themeSvc = inject(ThemeService);
 
-  themes = ["default","dark"];
+  themes = ["default", "dark"];
   currentTheme = "default";
 
   ngOnInit(): void {
-    this.onPageLoadOrRefresh();
-    const saved = localStorage.getItem("theme");
-    if (saved && this.themes.includes(saved)) {
-      this.applyTheme(saved);
-    }
+    const saved = this.themeSvc.getTheme();
+    this.currentTheme = saved;
+    this.themeSvc.setTheme(saved);
   }
-  private onPageLoadOrRefresh(): void {
-    localStorage.setItem("theme", "default");
-    const savedGet = localStorage.getItem("theme");
-    if (savedGet && this.themes.includes(savedGet)) {
-      this.applyTheme(savedGet);
-    }
 
-    console.log("Sayfa yüklendi veya yenilendi!");
-  }
   applyTheme(theme: string): void {
-    // önce tüm tema sınıflarını kaldır
-    this.themes
-      .filter((t) => t !== "default")
-      .forEach((t) => document.body.classList.remove(`theme-${t}`));
-
-    // default değilse seçili temayı ekle
-    if (theme !== "default") {
-      document.body.classList.add(`theme-${theme}`);
-    }
-
     this.currentTheme = theme;
-    localStorage.setItem("theme", theme);
+    this.themeSvc.setTheme(theme);
   }
 
   logout(): void {
     this.auth.logout();
     this.router.navigateByUrl("/login");
   }
-  
 }

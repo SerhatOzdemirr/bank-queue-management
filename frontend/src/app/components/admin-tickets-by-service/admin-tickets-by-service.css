@@ -10,8 +10,20 @@
   gap: 8px;
   justify-content: space-between;
 }
-
+select{
+  background-color: var(--tertiary-color);
+  color: var(--text-color);
+  cursor: pointer;
+  outline: none;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+}
 .chart {
   position: relative;
   height: 200px;
+}
+.ticketsByServiceHeader{
+  color: #686767;
+  font-weight: bold;
 }

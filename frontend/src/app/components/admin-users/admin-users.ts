@@ -5,6 +5,7 @@ import {
   UserSummaryDto,
 } from "../../services/admin-users.service";
 import { BootstrapStyleService } from "../../services/bootstrap-styles.service";
+import { ThemeService } from "../../services/theme.service";
 @Component({
   selector: "app-admin-users",
   standalone: true,
@@ -15,12 +16,17 @@ import { BootstrapStyleService } from "../../services/bootstrap-styles.service";
 export class AdminUsers implements OnInit , OnDestroy {
   private adminuserservice = inject(AdminUsersService);
   private bs = inject(BootstrapStyleService);
+  private themeservice = inject(ThemeService);
+  currentTheme = 'default';
   users: UserSummaryDto[] = [];
   loading = true;
   error: string | null = null;
 
   ngOnInit(): void {
     this.bs.enable();
+    this.themeservice.currentTheme$.subscribe(theme => {
+      this.currentTheme = theme;
+    })
     this.adminuserservice.getUsers().subscribe({
       next: (res) => (this.users = res),
       error: (err) => (this.error = err?.message ?? "Error occured"),
