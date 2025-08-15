@@ -8,6 +8,12 @@ import { agentGuard } from "./guards/agent.guard";
 export const routes: Routes = [
   { path: "", redirectTo: "signup", pathMatch: "full" },
   {
+    path : "profile",
+    loadComponent : () => 
+      import("./components/profile-page/profile-page").then((m) => m.ProfilePage),
+    
+  },
+  {
     path: "signup",
     loadComponent: () =>
       import("./components/signup/signup").then((m) => m.Signup),

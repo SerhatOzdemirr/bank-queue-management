@@ -1,0 +1,38 @@
+<div class="profile-header-container">
+  <div class="profile-avatar">
+    <img src="" alt="User Avatar" />
+  </div>
+
+  <div class="profile-info">
+    <p class="username">Username</p>
+    <p class="email">Mail</p>
+    <p class="role">Role: role</p>
+  </div>
+
+  <div class="profile-actions">
+    <button (click) = "openEditModal()" class="btn-edit">Edit</button>
+    <button class="btn-logout">Logout</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showEditModal">
+  <div class="modal">
+    <h3>Edit Profile</h3>
+    <form (ngSubmit)="saveProfile()">
+      <label>
+        Name:
+        <input type="text" [(ngModel)]="editData.name" name="name" />
+      </label>
+
+      <label>
+        Email:
+        <input type="email" [(ngModel)]="editData.email" name="email" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="closeEditModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -13,13 +13,14 @@
     <a *ngIf="auth.isLoggedIn(); else disabledNum" routerLink="/numerator">
       Take Number
     </a>
+    <a *ngIf="auth.isLoggedIn()" routerLink="/profile"> Profile </a>
     <ng-template #disabledNum>
       <span class="disabled-link">Take Number</span>
     </ng-template>
 
     <!-- Admin Dashboard -->
     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin">
-      Admin Dashboard
+      Dashboard
     </a>
     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/create">
       Create Admin
@@ -27,8 +28,8 @@
     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/agents">
       Create Agent
     </a>
-     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/users">
-      List All Users
+    <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/users">
+      List Users
     </a>
 
     <!-- Agent Tickets -->

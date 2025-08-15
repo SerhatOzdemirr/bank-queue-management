@@ -100,7 +100,7 @@
 }
 
 /* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 982px) {
   /* Show hamburger */
   .menu-toggle {
     display: block;
@@ -128,4 +128,5 @@
     font-size: small;
     padding: 2px;
   }
+  
 }

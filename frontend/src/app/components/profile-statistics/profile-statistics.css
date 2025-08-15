@@ -1,0 +1,108 @@
+.profile-statistics-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  background-color: var(--primary-color);
+  padding: 30px;
+}
+.statistics-summary h3 {
+  color: var(--tertiary-color);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas: "total approved rejected pending";
+  gap: 6px;
+}
+.stats-grid * {
+  color: var(--text-color);
+}
+.stat-total {
+  grid-area: total;
+}
+.stat-approved {
+  grid-area: approved;
+}
+.stat-rejected {
+  grid-area: rejected;
+}
+.stat-pending {
+  grid-area: pending;
+}
+.ticket-history * {
+  color: var(--text-color);
+}
+.ticket-history h3 {
+  color: var(--tertiary-color) !important;
+}
+.ticket-history {
+  padding: 10px;
+}
+.ticket-history table {
+  border-collapse: collapse;
+  text-align: center;
+  width: 100%;
+}
+.ticket-history table tr,
+td,
+tbody {
+  border: 1px solid var(--tertiary-color);
+  padding: 5px;
+}
+
+.ticket-history table thead tr {
+  background-color: var(--tertiary-color);
+}
+.statistics-summary .stat-card {
+  background-color: var(--tertiary-color);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--secondary-color);
+}
+@media (max-width: 700px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "total approved "
+      "rejected pending";
+  }
+  .stats-grid * {
+    font-size: small;
+  }
+
+  .stats-grid .stat-card {
+    height: 40px;
+    display: flex;
+    gap: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+@media (max-width: 380px) {
+  .stats-grid {
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-areas:
+      "total"
+      " approved "
+      "rejected"
+      " pending";
+  }
+  .stats-grid .stat-card {
+    height: 40px;
+    display: flex;
+    gap: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ticket-history table * {
+    font-size: 11px;
+  }
+  .stats-grid * {
+    font-size: 12px;
+  }
+  .ticket-history * {
+    font-size: small;
+  }
+}
