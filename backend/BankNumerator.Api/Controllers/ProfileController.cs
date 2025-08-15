@@ -19,6 +19,11 @@ namespace BankNumerator.Api.Controllers
             _profileService = profileService;
         }
 
+          private int GetCurrentUserId()
+        {
+            var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(uid, out var userId) ? userId : 0;
+        }
         [HttpGet]
         public async Task<IActionResult> GetProfile(CancellationToken ct)
         {
@@ -53,6 +58,23 @@ namespace BankNumerator.Api.Controllers
             var updated = await _profileService.UpdateProfileAsync(userId, dto, ct);
 
             return updated ? NoContent() : NotFound("Profile not found");
+        }
+          // GET /profile/statistics
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetProfileStatistics(CancellationToken ct = default)
+        {
+            var dto = await _profileService.GetProfileStatisticsAsync(GetCurrentUserId(), ct);
+            if (dto == null) return Unauthorized();
+            return Ok(dto);
+        }
+
+        // GET /profile/ticket-history
+        [HttpGet("ticket-history")]
+        public async Task<IActionResult> GetTicketHistory(CancellationToken ct = default)
+        {
+            var history = await _profileService.GetTicketHistoryAsync(GetCurrentUserId(), ct);
+            if (history == null) return Unauthorized();
+            return Ok(history);
         }
     }
 }

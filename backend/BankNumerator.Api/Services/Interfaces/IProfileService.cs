@@ -7,5 +7,7 @@ namespace BankNumerator.Api.Contracts
     {
         Task<ProfileDto?> GetProfileAsync(int userId, CancellationToken ct = default);
         Task<bool> UpdateProfileAsync(int userId, UpdateProfileDto dto, CancellationToken ct = default);
+        Task<ProfileStatisticsDto?> GetProfileStatisticsAsync(int userId, CancellationToken ct = default);
+        Task<IEnumerable<TicketHistoryDto>?> GetTicketHistoryAsync(int userId, CancellationToken ct = default);
     }
 }

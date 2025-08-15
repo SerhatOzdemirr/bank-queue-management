@@ -34,7 +34,7 @@ namespace BankNumerator.Api.Services
                 null // add later
             );
         }
-      public async Task<bool> UpdateProfileAsync(int userId, UpdateProfileDto dto, CancellationToken ct = default)
+        public async Task<bool> UpdateProfileAsync(int userId, UpdateProfileDto dto, CancellationToken ct = default)
         {
             var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
             if (user == null) return false;
@@ -51,6 +51,45 @@ namespace BankNumerator.Api.Services
 
             await _ctx.SaveChangesAsync(ct);
             return true;
+        }
+        public async Task<ProfileStatisticsDto?> GetProfileStatisticsAsync(int userId, CancellationToken ct = default)
+        {
+            var assignments = await _ctx.TicketAssignments
+                .Where(ta => ta.Ticket.UserId == userId)
+                .Include(ta => ta.Ticket)
+                .ToListAsync(ct);
+            var total = assignments.Count;
+            var approved = assignments.Count(t => t.Status == "Approved");
+            var rejected = assignments.Count(t => t.Status == "Rejected");
+            var pending = assignments.Count(t => t.Status == "Pending");
+
+            var history = assignments
+                .OrderByDescending(a => a.Ticket.TakenAt)
+                .Select(a => new TicketHistoryDto(
+                    a.Ticket.ServiceLabel,
+                    a.Ticket.Number,
+                    a.Status,
+                    a.Ticket.TakenAt
+                ))
+                .Take(10)
+                .ToList();
+            return new ProfileStatisticsDto(total, approved, rejected, pending, history);
+        }
+        public async Task<IEnumerable<TicketHistoryDto>?> GetTicketHistoryAsync(int userId, CancellationToken ct = default)
+        {
+            var assignments = await _ctx.TicketAssignments
+                .Where(ta => ta.Ticket.UserId == userId)
+                .Include(ta => ta.Ticket)
+                .OrderByDescending(ta => ta.Ticket.TakenAt)
+                .Take(10)
+                .ToListAsync(ct);
+
+            return assignments.Select(a => new TicketHistoryDto(
+                a.Ticket.ServiceLabel,
+                a.Ticket.Number,
+                a.Status,
+                a.Ticket.TakenAt
+            ));
         }
 
     }

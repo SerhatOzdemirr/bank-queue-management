@@ -54,3 +54,18 @@ public sealed record UpdateProfileDto(
     string Email,
     string? Password
 );
+
+public sealed record ProfileStatisticsDto(
+    int TotalTickets,
+    int Approved,
+    int Rejected,
+    int Pending,
+    IEnumerable<TicketHistoryDto> History
+);
+
+public sealed record TicketHistoryDto(
+    string Service,
+    int Number,
+    string Status,
+    DateTime TakenAt
+);

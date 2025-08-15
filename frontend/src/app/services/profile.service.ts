@@ -18,6 +18,20 @@ export interface UpdateProfileDto {
   password?: string | null;
 }
 
+export interface ProfileStatisticsDto {
+  totalTickets: number;
+  approved: number;
+  rejected: number;
+  pending: number;
+}
+
+export interface TicketHistoryDto {
+  service: string;
+  number: number;
+  status: string;
+  takenAt: string;
+}
+
 @Injectable({ providedIn: "root" })
 export class ProfileService {
   private base = `${environment.apiUrl}/profile`;
@@ -30,5 +44,13 @@ export class ProfileService {
 
   updateProfile(data: UpdateProfileDto) {
     return this.http.put(`${this.base}`, data);
+  }
+
+  getProfileStatistics(): Observable<ProfileStatisticsDto> {
+    return this.http.get<ProfileStatisticsDto>(`${this.base}/statistics`);
+  }
+
+  getTicketHistory(): Observable<TicketHistoryDto[]> {
+    return this.http.get<TicketHistoryDto[]>(`${this.base}/ticket-history`);
   }
 }
