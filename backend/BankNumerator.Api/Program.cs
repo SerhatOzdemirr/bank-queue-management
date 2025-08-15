@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using BankNumerator.Api.Data;        
 using BankNumerator.Api.Services;
 using BankNumerator.Api.Services.Interfaces;
+using BankNumerator.Api.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +63,7 @@ builder.Services.AddScoped<INumeratorService, NumeratorService>();
 builder.Services.AddScoped<IServicesService, ServicesService>();
 builder.Services.AddScoped<IAdminStatsService, AdminStatsService>();
 builder.Services.AddScoped<IAdminAgentActivityService, AdminAgentActivityService>();
-
+builder.Services.AddScoped<IProfileService, ProfileService>();
 var app = builder.Build();
 
 // 6) Middleware

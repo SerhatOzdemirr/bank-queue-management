@@ -20,8 +20,37 @@ namespace BankNumerator.Api.Models
         }
     }
 }
-public record UserDto(string Username, string Email, string Password);
-public record LoginDto(string Email, string Password);
+public record UserDto(
+    string Username,
+    string Email,
+    string Password
+);
+public record LoginDto(
+    string Email,
+    string Password
+);
 
-public sealed record UserSummaryDto(int Id, string Username, string Email, int PriorityScore , string Role );
-public sealed record UpdatePriorityDto(int Score);
+public sealed record UserSummaryDto(
+    int Id,
+    string Username,
+    string Email,
+    int PriorityScore ,
+    string Role 
+);
+public sealed record UpdatePriorityDto(
+    int Score
+);
+public sealed record ProfileDto(
+    int Id,
+    string Username,
+    string Email,
+    int PriorityScore,
+    string Role,
+    string? AvatarUrl
+);
+
+public sealed record UpdateProfileDto(
+    string Username,
+    string Email,
+    string? Password
+);

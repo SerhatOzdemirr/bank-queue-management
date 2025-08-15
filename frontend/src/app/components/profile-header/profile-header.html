@@ -1,16 +1,16 @@
-<div class="profile-header-container">
+<div class="profile-header-container" *ngIf="profile">
   <div class="profile-avatar">
     <img src="" alt="User Avatar" />
   </div>
 
   <div class="profile-info">
-    <p class="username">Username</p>
-    <p class="email">Mail</p>
-    <p class="role">Role: role</p>
+    <p class="username">Welcome {{ profile.username }}</p>
+    <p class="email">{{ profile.email }}</p>
+    <p class="role">Role: {{ profile.role }}</p>
   </div>
 
   <div class="profile-actions">
-    <button (click) = "openEditModal()" class="btn-edit">Edit</button>
+    <button (click)="openEditModal()" class="btn-edit">Edit</button>
     <button class="btn-logout">Logout</button>
   </div>
 </div>
@@ -27,6 +27,15 @@
       <label>
         Email:
         <input type="email" [(ngModel)]="editData.email" name="email" />
+      </label>
+
+      <label>
+        New Password:
+        <input
+          type="password"
+          [(ngModel)]="editData.password"
+          name="password"
+        />
       </label>
 
       <div class="modal-actions">

@@ -40,14 +40,31 @@ namespace BankNumerator.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("{ticketId}/reject")]
-        public async Task<IActionResult> Reject(int ticketId)
-        {
-            var agentId = await _svc.GetCurrentAgentIdAsync(GetCurrentUserId());
-            if (agentId == null) return Unauthorized();
-            await _svc.RejectAsync(agentId.Value, ticketId);
-            return NoContent();
-        }
+       [HttpPost("{ticketId}/reject")]
+public async Task<IActionResult> Reject(int ticketId)
+{
+    var agentId = await _svc.GetCurrentAgentIdAsync(GetCurrentUserId());
+    if (agentId == null) return Unauthorized();
+
+    try
+    {
+        await _svc.RejectAsync(agentId.Value, ticketId);
+        return NoContent();
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return NotFound(new { message = ex.Message });
+    }
+    catch (InvalidOperationException ex)
+    {
+        return BadRequest(new { message = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { message = "Unexpected error", detail = ex.Message });
+    }
+}
+
 
         [HttpPost("{ticketId}/release")]
         public async Task<IActionResult> Release(int ticketId)

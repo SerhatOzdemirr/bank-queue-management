@@ -42,8 +42,8 @@ public sealed class AuthService : IAuthService
         {
             Username = username,
             Email = email,
-            PasswordHash = hmac.Key,
-            PasswordSalt = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
+            PasswordSalt = hmac.Key, // salt burada key oluyor
+            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)), // hash
             Role = User.UserRole.Default
         };
         _ctx.Users.Add(user);
@@ -71,8 +71,8 @@ public sealed class AuthService : IAuthService
         {
             Username = username,
             Email = email,
-            PasswordHash = hmac.Key,
-            PasswordSalt = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
+            PasswordSalt = hmac.Key,
+            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
             Role = User.UserRole.Admin
         };
         _ctx.Users.Add(user);
@@ -90,10 +90,10 @@ public sealed class AuthService : IAuthService
         var user = await _ctx.Users.SingleOrDefaultAsync(u => u.Email == email, ct);
         if (user == null) throw new UnauthorizedAccessException("User not found.");
 
-        using var hmac = new HMACSHA512(user.PasswordHash);
-        var computed = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
-        if (!computed.SequenceEqual(user.PasswordSalt))
-            throw new UnauthorizedAccessException("Incorrect password.");
+       using var hmac = new HMACSHA512(user.PasswordSalt);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+        if (!computedHash.SequenceEqual(user.PasswordHash))
+        throw new UnauthorizedAccessException("Incorrect password.");
 
         return CreateToken(user);
     }
