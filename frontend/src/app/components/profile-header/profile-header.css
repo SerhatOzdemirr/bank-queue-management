@@ -1,16 +1,20 @@
 .profile-header-container {
   display: grid;
-  grid-template-columns: 0.5fr 2fr 1fr;
+  grid-template-columns: auto 0.5fr auto;
   grid-template-areas: "avatar info action";
   background-color: var(--primary-color);
   color: var(--text-color);
   padding: 20px;
+  align-items: center; 
+  justify-content: space-between; 
 }
+
 .profile-avatar {
   grid-area: avatar;
   display: flex;
   align-items: center;
 }
+
 .profile-avatar img {
   border-radius: 50%;
   border: 2px solid var(--tertiary-color);
@@ -22,8 +26,8 @@
 
 .profile-info {
   padding: 30px;
-  width: 30%;
   grid-area: info;
+  text-align: center; 
 }
 
 .profile-info h2 {
@@ -45,7 +49,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: start;
+  align-items: center; /* Updated: Centers the buttons within the column. */
   gap: 10px;
 }
 
@@ -73,7 +77,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(34, 40, 49, 0.85); /* --primary-color with opacity */
+  background: rgba(34, 40, 49, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -131,9 +135,10 @@
 
 @media (max-width: 768px) {
   .profile-header-container {
-    grid-template-columns: 1fr 3fr;
-    grid-template-areas: "avatar info" "action action";
+    grid-template-columns: .8fr auto auto;
+    grid-template-areas: "avatar info info" "action action action";
     justify-items: center;
+    align-self: center;
   }
   .modal {
     width: 300px;
@@ -158,7 +163,7 @@
       "avatar"
       "info"
       "action";
-    justify-items: center; /* Grid içindeki her şeyi yatayda ortalar */
+    justify-items: center;
     text-align: center;
   }
   .modal {

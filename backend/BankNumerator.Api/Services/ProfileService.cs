@@ -59,7 +59,7 @@ namespace BankNumerator.Api.Services
                 .Include(ta => ta.Ticket)
                 .ToListAsync(ct);
             var total = assignments.Count;
-            var approved = assignments.Count(t => t.Status == "Approved");
+            var approved = assignments.Count(t => t.Status == "Accepted");
             var rejected = assignments.Count(t => t.Status == "Rejected");
             var pending = assignments.Count(t => t.Status == "Pending");
 

@@ -22,12 +22,22 @@
 }
 .stat-approved {
   grid-area: approved;
+  border: 2px solid green !important;
 }
 .stat-rejected {
   grid-area: rejected;
+  border: 2px solid red !important;
 }
 .stat-pending {
   grid-area: pending;
+  border: 2px solid orange !important;
+}
+.no-history-msg {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+  padding: 50px;
+  border-radius: 12px;
 }
 .ticket-history * {
   color: var(--text-color);
@@ -36,7 +46,27 @@
   color: var(--tertiary-color) !important;
 }
 .ticket-history {
-  padding: 10px;
+  max-height: 200px; /* yaklaşık 5 satır yüksekliğine göre ayarla */
+  overflow-y: auto;
+}
+/* WebKit scrollbar özelleştirme */
+.ticket-history::-webkit-scrollbar {
+  width: 8px; /* scrollbar genişliği */
+}
+
+.ticket-history::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+  border-radius: 10px;
+}
+
+.ticket-history::-webkit-scrollbar-thumb {
+  background-color: var(--tertiary-color);
+  border-radius: 10px;
+  border: 2px solid var(--secondary-color);
+}
+
+.ticket-history::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-color);
 }
 .ticket-history table {
   border-collapse: collapse;
@@ -59,7 +89,13 @@ tbody {
   border-radius: 10px;
   border: 1px solid var(--secondary-color);
 }
-@media (max-width: 700px) {
+@media (max-width: 900px) {
+  .ticket-history * {
+    font-size: small;
+    max-height: 360px;
+  }
+}
+@media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     grid-template-areas:
@@ -69,7 +105,9 @@ tbody {
   .stats-grid * {
     font-size: small;
   }
-
+  .ticket-history * {
+    font-size: 12px;
+  }
   .stats-grid .stat-card {
     height: 40px;
     display: flex;

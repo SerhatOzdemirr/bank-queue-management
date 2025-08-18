@@ -1,6 +1,6 @@
 <div class="profile-statistics-container">
   <div class="statistics-summary">
-    <h3>Account Statistics</h3>
+    <h3>Ticket Statistics</h3>
     <div class="stats-grid" *ngIf="stats">
       <div class="stat-card stat-total">
         <h4>Total Tickets</h4>
@@ -23,23 +23,31 @@
 
   <div class="ticket-history">
     <h3>Ticket History</h3>
-    <table *ngIf="history.length">
-      <thead>
-        <tr>
-          <th>Service</th>
-          <th>Number</th>
-          <th>Status</th>
-          <th>Taken At</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ticket of history">
-          <td>{{ ticket.service }}</td>
-          <td>{{ ticket.number }}</td>
-          <td class="status" [ngClass]="ticket.status.toLowerCase()">{{ ticket.status }}</td>
-          <td>{{ ticket.takenAt | date:'yyyy-MM-dd HH:mm' }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <ng-container *ngIf="history.length; else noTickets">
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Number</th>
+            <th>Status</th>
+            <th>Taken At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ticket of history">
+            <td>{{ ticket.service }}</td>
+            <td>{{ ticket.number }}</td>
+            <td class="status" [ngClass]="ticket.status.toLowerCase()">
+              {{ ticket.status }}
+            </td>
+            <td>{{ ticket.takenAt | date : "yyyy-MM-dd HH:mm" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-template #noTickets>
+      <p class="no-history-msg">No ticket history available.</p>
+    </ng-template>
   </div>
 </div>
