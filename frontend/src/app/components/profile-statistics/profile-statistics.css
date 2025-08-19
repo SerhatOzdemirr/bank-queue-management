@@ -1,146 +1,231 @@
+/* ========= Profile Statistics (modernized, same responsiveness) ========= */
+
 .profile-statistics-container {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  background-color: var(--primary-color);
-  padding: 30px;
+  background: var(--primary-color);
+  padding: 24px;
+  border-radius: 16px;
 }
+
+/* Section title */
 .statistics-summary h3 {
   color: var(--tertiary-color);
+  margin: 0 0 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
 }
+
+/* ===== Grid (unchanged responsive layout) ===== */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-areas: "total approved rejected pending";
-  gap: 6px;
+  gap: 8px;
 }
-.stats-grid * {
+
+/* Base stat card */
+.stats-grid .stat-card {
+  background: var(--tertiary-color);
   color: var(--text-color);
+  border: 1px solid var(--secondary-color);
+  border-radius: 12px;
+  padding: 14px 12px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 72px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.stat-total {
-  grid-area: total;
+
+.stats-grid .stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
 }
-.stat-approved {
-  grid-area: approved;
-  border: 2px solid green !important;
+
+/* Headings & numbers */
+.stats-grid .stat-card h4 {
+  margin: 0 0 4px;
+  font-size: clamp(.9rem, 1.5vw, 1rem);
+  font-weight: 600;
 }
-.stat-rejected {
-  grid-area: rejected;
-  border: 2px solid red !important;
+
+.stats-grid .stat-card p {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.2rem, 3.2vw, 1.8rem);
+  line-height: 1.1;
 }
-.stat-pending {
-  grid-area: pending;
-  border: 2px solid orange !important;
-}
+
+/* Grid areas */
+.stat-total    { grid-area: total; }
+.stat-approved { grid-area: approved; }
+.stat-rejected { grid-area: rejected; }
+.stat-pending  { grid-area: pending; }
+
+/* Status accent borders */
+.stat-approved { border: 2px solid #12b76a !important; }  /* green */
+.stat-rejected { border: 2px solid #f04438 !important; }  /* red */
+.stat-pending  { border: 2px solid #f59e0b !important; }  /* orange */
+
+/* ========= Empty state ========= */
 .no-history-msg {
   background: var(--secondary-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
-  padding: 50px;
+  padding: 48px 20px;
   border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
+
+/* ========= Ticket history block ========= */
+.ticket-history {
+  max-height: 200px;               /* approx. 5-row viewport */
+  overflow-y: auto;
+  border-radius: 12px;
+  background: transparent;
+}
+
 .ticket-history * {
   color: var(--text-color);
 }
+
 .ticket-history h3 {
   color: var(--tertiary-color) !important;
-}
-.ticket-history {
-  max-height: 200px; /* yaklaşık 5 satır yüksekliğine göre ayarla */
-  overflow-y: auto;
-}
-/* WebKit scrollbar özelleştirme */
-.ticket-history::-webkit-scrollbar {
-  width: 8px; /* scrollbar genişliği */
+  margin: 12px 0;
 }
 
+/* Scrollbar (WebKit) */
+.ticket-history::-webkit-scrollbar {
+  width: 8px;
+}
 .ticket-history::-webkit-scrollbar-track {
   background: var(--secondary-color);
   border-radius: 10px;
 }
-
 .ticket-history::-webkit-scrollbar-thumb {
   background-color: var(--tertiary-color);
   border-radius: 10px;
   border: 2px solid var(--secondary-color);
 }
-
 .ticket-history::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-color);
 }
-.ticket-history table {
-  border-collapse: collapse;
-  text-align: center;
-  width: 100%;
+
+/* Scrollbar (Firefox) */
+.ticket-history {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tertiary-color) var(--secondary-color);
 }
-.ticket-history table tr,
-td,
-tbody {
+
+/* ========= Table (modern) ========= */
+.ticket-history table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+  background: var(--secondary-color);
   border: 1px solid var(--tertiary-color);
-  padding: 5px;
+  border-radius: 12px;
+  overflow: hidden;                /* clip rounded corners */
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
 }
 
 .ticket-history table thead tr {
-  background-color: var(--tertiary-color);
+  background: var(--tertiary-color);
 }
-.statistics-summary .stat-card {
-  background-color: var(--tertiary-color);
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--secondary-color);
+
+.ticket-history table thead th {
+  position: sticky;                /* stays visible while scrolling */
+  top: 0;
+  z-index: 1;
+  padding: 10px 8px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--secondary-color);
 }
+
+.ticket-history table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.ticket-history table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--secondary-color) 90%, var(--tertiary-color) 10%);
+}
+
+.ticket-history table tbody tr:hover {
+  background: color-mix(in srgb, var(--secondary-color) 80%, var(--tertiary-color) 20%);
+}
+
+.ticket-history table th,
+.ticket-history table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--tertiary-color);
+  white-space: nowrap;
+}
+
+.ticket-history table tbody td {
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket-history table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ========= Reduce motion ========= */
+@media (prefers-reduced-motion: reduce) {
+  .stats-grid .stat-card,
+  .ticket-history table tbody tr { transition: none; }
+}
+
+/* ========= Extra typography scaling (<=900px) ========= */
 @media (max-width: 900px) {
   .ticket-history * {
     font-size: small;
-    max-height: 360px;
+    max-height: 360px; /* preserved from original */
   }
 }
+
+/* ========= Tablet (<=768px) – keep same layout intent ========= */
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     grid-template-areas:
-      "total approved "
+      "total approved"
       "rejected pending";
+    gap: 6px;
   }
-  .stats-grid * {
-    font-size: small;
-  }
-  .ticket-history * {
-    font-size: 12px;
-  }
+
   .stats-grid .stat-card {
-    height: 40px;
-    display: flex;
+    height: 40px;     /* original compact height */
+    padding: 8px;
     gap: 0;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
   }
+
+  .stats-grid .stat-card h4 { font-size: 12px; }
+  .stats-grid .stat-card p  { font-size: 16px; }
+
+  .ticket-history * { font-size: 12px; }
 }
+
+/* ========= Mobile (<=380px) – keep same layout intent ========= */
 @media (max-width: 380px) {
   .stats-grid {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
     grid-template-areas:
       "total"
-      " approved "
+      "approved"
       "rejected"
-      " pending";
+      "pending";
   }
+
   .stats-grid .stat-card {
     height: 40px;
-    display: flex;
+    padding: 8px;
     gap: 0;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
   }
-  .ticket-history table * {
-    font-size: 11px;
-  }
-  .stats-grid * {
-    font-size: 12px;
-  }
-  .ticket-history * {
-    font-size: small;
-  }
+
+  .stats-grid * { font-size: 12px; }
+  .ticket-history table * { font-size: 11px; }
+  .ticket-history * { font-size: small; }
 }

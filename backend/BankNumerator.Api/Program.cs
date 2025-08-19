@@ -68,7 +68,7 @@ var app = builder.Build();
 
 // 6) Middleware
 app.UseCors();
-
+app.UseStaticFiles();
 app.UseAuthentication();   
 app.UseAuthorization();
 
@@ -93,4 +93,6 @@ app.MapGet("/health/db", async (BankNumeratorContext db) =>
 // 8) API Controller’larını Haritalandır
 app.MapControllers();
 
+var avatarsPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "avatars");
+Directory.CreateDirectory(avatarsPath);
 app.Run();

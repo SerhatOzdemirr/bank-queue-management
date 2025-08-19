@@ -53,4 +53,10 @@ export class ProfileService {
   getTicketHistory(): Observable<TicketHistoryDto[]> {
     return this.http.get<TicketHistoryDto[]>(`${this.base}/ticket-history`);
   }
+
+  uploadAvatar(file : File) : Observable<{url: string ; relativeUrl : string}>{
+    const form = new FormData();
+    form.append("avatar" , file);
+    return this.http.post<{url: string ; relativeUrl : string}>(`${this.base}/avatar` , form);
+  }
 }

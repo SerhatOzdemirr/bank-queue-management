@@ -1,8 +1,10 @@
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BankNumerator.Api.Contracts;
 using BankNumerator.Api.Data;
 using BankNumerator.Api.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BankNumerator.Api.Services
@@ -31,7 +33,7 @@ namespace BankNumerator.Api.Services
                 user.Email,
                 user.PriorityScore,
                 user.Role.ToString(),
-                null // add later
+                user.AvatarUrl
             );
         }
         public async Task<bool> UpdateProfileAsync(int userId, UpdateProfileDto dto, CancellationToken ct = default)
@@ -92,5 +94,61 @@ namespace BankNumerator.Api.Services
             ));
         }
 
+        public async Task<string?> UpdateAvatarAsync(int userId, IFormFile file, CancellationToken ct = default)
+        {
+            if (file == null || file.Length == 0) return null;
+
+            var allowed = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowed.Contains(file.ContentType))
+            {
+                throw new InvalidOperationException("Unsupport image type");
+            }
+            // 2MB limit
+            if (file.Length > 2 * 1024 * 1024)
+            {
+                throw new InvalidOperationException("File too large");
+            }
+
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+            if (user == null) return null;
+
+            var ext = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(ext))
+            {
+                ext = file.ContentType switch
+                {
+                    "image/jpeg" => ".jpg",
+                    "image/png" => ".png",
+                    "image/webp" => ".webp",
+                    _ => ".bin"
+                };
+            }
+
+            var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatars");
+            Directory.CreateDirectory(uploads);
+
+            var safeExt = Regex.Replace(ext.ToLowerInvariant(), @"[^a-z0-9\.]", "");
+            var fileName = $"{userId}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{safeExt}";
+            var fullPath = Path.Combine(uploads, fileName);
+
+            if (!string.IsNullOrWhiteSpace(user.AvatarUrl) &&
+            user.AvatarUrl.StartsWith("/avatars/", StringComparison.OrdinalIgnoreCase))
+            {
+                var old = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
+                    user.AvatarUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(old)) System.IO.File.Delete(old);
+            }
+
+            await using (var fs = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(fs, ct);
+            }
+
+            user.AvatarUrl = $"/avatars/{fileName}";
+            await _ctx.SaveChangesAsync(ct);
+
+            return user.AvatarUrl; 
+                    
+            }
     }
 }

@@ -19,7 +19,7 @@ namespace BankNumerator.Api.Controllers
             _profileService = profileService;
         }
 
-          private int GetCurrentUserId()
+        private int GetCurrentUserId()
         {
             var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(uid, out var userId) ? userId : 0;
@@ -59,7 +59,7 @@ namespace BankNumerator.Api.Controllers
 
             return updated ? NoContent() : NotFound("Profile not found");
         }
-          // GET /profile/statistics
+        // GET /profile/statistics
         [HttpGet("statistics")]
         public async Task<IActionResult> GetProfileStatistics(CancellationToken ct = default)
         {
@@ -75,6 +75,20 @@ namespace BankNumerator.Api.Controllers
             var history = await _profileService.GetTicketHistoryAsync(GetCurrentUserId(), ct);
             if (history == null) return Unauthorized();
             return Ok(history);
+        }
+        
+        [HttpPost("avatar")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(2 * 1024 * 1024)] // 2MB
+        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile avatar, CancellationToken ct)
+        {
+            if (avatar == null) return BadRequest("No file");
+
+            var url = await _profileService.UpdateAvatarAsync(GetCurrentUserId(), avatar, ct);
+            if (url == null) return BadRequest("Upload failed");
+
+            var absolute = $"{Request.Scheme}://{Request.Host}{url}";
+            return Ok(new { url = absolute, relativeUrl = url });
         }
     }
 }

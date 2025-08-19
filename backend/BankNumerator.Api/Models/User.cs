@@ -11,7 +11,7 @@ namespace BankNumerator.Api.Models
         public UserRole Role { get; set; } = UserRole.Default;
 
         public int PriorityScore { get; set; }
-
+        public string? AvatarUrl{ get; set; }
         public enum UserRole
         {
             Default = 0,
