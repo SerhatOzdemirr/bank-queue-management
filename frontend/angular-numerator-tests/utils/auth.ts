@@ -29,15 +29,6 @@ export async function ensureLoggedInAgent(
     });
   });
 
-  await page.route(
-    /\/api\/(users\/me|profile)(\?.*)?$/i,
-    async (route: Route) => {
-      await route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify(user),
-      });
-    }
-  );
 }
 export async function ensureLoggedInDefault(
   page: Page,

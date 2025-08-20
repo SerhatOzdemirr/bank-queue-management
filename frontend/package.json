@@ -37,7 +37,7 @@
     "@angular/compiler-cli": "^20.1.0",
     "@playwright/test": "^1.54.1",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^24.0.15",
+    "@types/node": "^24.3.0",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
