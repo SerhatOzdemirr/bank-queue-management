@@ -6,8 +6,9 @@
 /tmp
 /out-tsc
 /bazel-out
-
-# Node
+# wwwroot uploads
+**/wwwroot/*
+!/wwwroot/.gitkeep# Node
 /node_modules
 npm-debug.log
 yarn-error.log

@@ -3,6 +3,8 @@ import { Router, RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthService } from "../../services/auth.service";
 import { ThemeService } from "../../services/theme.service";
+import { ProfileService, ProfileDto } from "../../services/profile.service";
+import { environment } from "../../../environment";
 
 @Component({
   standalone: true,
@@ -13,17 +15,27 @@ import { ThemeService } from "../../services/theme.service";
 })
 export class Navbar implements OnInit {
   auth = inject(AuthService);
-  menuOpen = false;
   private router = inject(Router);
   private themeSvc = inject(ThemeService);
+  private profileSvc = inject(ProfileService);
 
   themes = ["default", "dark"];
   currentTheme = "default";
+  menuOpen = false;
+
+  profile?: ProfileDto;
 
   ngOnInit(): void {
     const saved = this.themeSvc.getTheme();
     this.currentTheme = saved;
     this.themeSvc.setTheme(saved);
+
+    if (this.auth.isLoggedIn()) {
+      this.profileSvc.getProfileInfo().subscribe({
+        next: (p) => (this.profile = p),
+        error: () => (this.profile = undefined),
+      });
+    }
   }
 
   applyTheme(theme: string): void {
@@ -34,5 +46,11 @@ export class Navbar implements OnInit {
   logout(): void {
     this.auth.logout();
     this.router.navigateByUrl("/login");
+  }
+
+  toAbs(url?: string | null) {
+    if (!url) return "assets/avatar-placeholder.svg";
+    const base = environment.apiUrl.replace(/\/api$/, ""); 
+    return url.startsWith("http") ? url : `${base}${url}`;
   }
 }

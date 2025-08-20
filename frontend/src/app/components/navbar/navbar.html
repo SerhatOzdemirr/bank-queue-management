@@ -13,7 +13,7 @@
     <a *ngIf="auth.isLoggedIn(); else disabledNum" routerLink="/numerator">
       Take Number
     </a>
-    <a *ngIf="auth.isLoggedIn()" routerLink="/profile"> Profile </a>
+
     <ng-template #disabledNum>
       <span class="disabled-link">Take Number</span>
     </ng-template>
@@ -63,5 +63,14 @@
     <button *ngIf="auth.isLoggedIn()" class="logout-btn" (click)="logout()">
       Logout
     </button>
+
+    <a
+      *ngIf="auth.isLoggedIn()"
+      routerLink="/profile"
+      class="nav-avatar"
+      [title]="profile?.username || 'Profile'"
+    >
+      <img [src]="toAbs(profile?.avatarUrl)" alt="Profile" />
+    </a>
   </div>
 </nav>
