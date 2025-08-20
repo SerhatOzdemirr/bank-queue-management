@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environment";
-import { Observable } from "rxjs";
+import { Observable, BehaviorSubject, tap } from "rxjs";
 
 export interface ProfileDto {
   id: number;
@@ -36,14 +36,28 @@ export interface TicketHistoryDto {
 export class ProfileService {
   private base = `${environment.apiUrl}/profile`;
 
+  // Profile bilgisini reactive state olarak tut
+  private profileSubject = new BehaviorSubject<ProfileDto | null>(null);
+  profile$ = this.profileSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
-  getProfileInfo(): Observable<ProfileDto> {
-    return this.http.get<ProfileDto>(this.base);
+  /** Backend'den profili alır ve subject'e koyar */
+  loadProfile(): Observable<ProfileDto> {
+    return this.http
+      .get<ProfileDto>(this.base)
+      .pipe(tap((p) => this.profileSubject.next(p)));
+  }
+
+  /** Mevcut değeri senkron çekmek gerekirse */
+  get currentProfile(): ProfileDto | null {
+    return this.profileSubject.value;
   }
 
   updateProfile(data: UpdateProfileDto) {
-    return this.http.put(`${this.base}`, data);
+    return this.http
+      .put<ProfileDto>(`${this.base}`, data)
+      .pipe(tap((p) => this.profileSubject.next(p)));
   }
 
   getProfileStatistics(): Observable<ProfileStatisticsDto> {
@@ -54,9 +68,22 @@ export class ProfileService {
     return this.http.get<TicketHistoryDto[]>(`${this.base}/ticket-history`);
   }
 
-  uploadAvatar(file : File) : Observable<{url: string ; relativeUrl : string}>{
+  uploadAvatar(file: File): Observable<{ url: string; relativeUrl: string }> {
     const form = new FormData();
-    form.append("avatar" , file);
-    return this.http.post<{url: string ; relativeUrl : string}>(`${this.base}/avatar` , form);
+    form.append("avatar", file);
+    return this.http
+      .post<{ url: string; relativeUrl: string }>(`${this.base}/avatar`, form)
+      .pipe(
+        tap((res) => {
+          // mevcut profile'ı güncelle
+          const cur = this.profileSubject.value;
+          if (cur) {
+            this.profileSubject.next({
+              ...cur,
+              avatarUrl: res.relativeUrl,
+            });
+          }
+        })
+      );
   }
 }

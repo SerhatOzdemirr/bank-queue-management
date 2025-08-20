@@ -31,10 +31,10 @@ export class Navbar implements OnInit {
     this.themeSvc.setTheme(saved);
 
     if (this.auth.isLoggedIn()) {
-      this.profileSvc.getProfileInfo().subscribe({
-        next: (p) => (this.profile = p),
-        error: () => (this.profile = undefined),
-      });
+      this.profileSvc.profile$.subscribe(
+        (p) => (this.profile = p || undefined)
+      );
+      this.profileSvc.loadProfile().subscribe();
     }
   }
 
@@ -50,7 +50,7 @@ export class Navbar implements OnInit {
 
   toAbs(url?: string | null) {
     if (!url) return "assets/avatar-placeholder.svg";
-    const base = environment.apiUrl.replace(/\/api$/, ""); 
+    const base = environment.apiUrl.replace(/\/api$/, "");
     return url.startsWith("http") ? url : `${base}${url}`;
   }
 }

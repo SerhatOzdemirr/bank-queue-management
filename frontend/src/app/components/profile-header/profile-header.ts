@@ -13,7 +13,7 @@ import { environment } from "../../../environment";
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./profile-header.html",
-  styleUrl: "./profile-header.css",
+  styleUrls: ["./profile-header.css"], // düzeltildi (styleUrl değil styleUrls)
 })
 export class ProfileHeader implements OnInit {
   private profilesvc = inject(ProfileService);
@@ -28,23 +28,30 @@ export class ProfileHeader implements OnInit {
   };
 
   ngOnInit() {
-    this.loadProfile();
+    // reactive abone ol
+    this.profilesvc.profile$.subscribe((p) => {
+      if (p) {
+        this.profile = p;
+        this.editData.name = p.username;
+        this.editData.email = p.email;
+      }
+    });
+
+    // ilk yükleme
+    this.profilesvc.loadProfile().subscribe();
   }
 
   toAbs(url?: string | null) {
     if (!url) return "assets/avatar-placeholder.svg";
-    // url backend’den "/avatars/xxx.png" geliyor
-    const base = environment.apiUrl.replace(/\/api$/, ""); // sondaki /api'yi sil
+    const base = environment.apiUrl.replace(/\/api$/, "");
     return url.startsWith("http") ? url : `${base}${url}`;
   }
 
-  // 👇 EKSİK OLAN METOT
   onFileSelected(ev: Event) {
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    // basit tip / boyut kontrolü
     if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
       console.error("Unsupported image type");
       input.value = "";
@@ -57,13 +64,9 @@ export class ProfileHeader implements OnInit {
     }
 
     this.profilesvc.uploadAvatar(file).subscribe({
-      next: (res) => {
-        if (this.profile) {
-          // API { url, relativeUrl } döndürüyor
-          this.profile.avatarUrl =
-            res?.relativeUrl || res?.url || this.profile.avatarUrl;
-        }
-        input.value = ""; // aynı dosyayı tekrar seçebilmek için sıfırla
+      next: () => {
+        // uploadAvatar zaten BehaviorSubject'i güncelliyor
+        input.value = "";
       },
       error: (err) => {
         console.error("Upload failed", err);
@@ -72,20 +75,10 @@ export class ProfileHeader implements OnInit {
     });
   }
 
-  loadProfile() {
-    this.profilesvc.getProfileInfo().subscribe({
-      next: (data) => {
-        this.profile = data;
-        this.editData.name = data.username;
-        this.editData.email = data.email;
-      },
-      error: (err) => console.error("Profile load error", err),
-    });
-  }
-
   openEditModal() {
     this.showEditModal = true;
   }
+
   closeEditModal() {
     this.showEditModal = false;
   }
@@ -99,10 +92,7 @@ export class ProfileHeader implements OnInit {
 
     this.profilesvc.updateProfile(updateData).subscribe({
       next: () => {
-        if (this.profile) {
-          this.profile.username = updateData.username;
-          this.profile.email = updateData.email;
-        }
+        // updateProfile BehaviorSubject'i güncelliyor
         this.closeEditModal();
       },
       error: (err) => console.error("Update failed", err),
