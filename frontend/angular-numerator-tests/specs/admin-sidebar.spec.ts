@@ -1,47 +1,65 @@
-import { Page, expect, test } from "@playwright/test";
+// tests/specs/admin.sidebar.spec.ts
+import { test, expect } from "@playwright/test";
 import { AdminSidebarPage } from "../page-objects/admin-sidebar.page";
-import { BASE_URL, initializePageObject } from "../utils/testSetup";
-import { LoginPage } from "../page-objects/login.page";
+import { ensureLoggedInAdmin, ensureLoggedInDefault } from "../utils/auth";
 
-test.describe.serial("Admin Sidebar POM Tests", () => {
-  let adminSidebar: AdminSidebarPage;
-  let loginPage: LoginPage;
-  test.beforeEach(async ({ page, context, request }) => {
-    adminSidebar = await initializePageObject(
-      page,
-      context,
-      request,
-      AdminSidebarPage,
-      (instance) => instance.navigateTo(BASE_URL)
-    );
+const BASE_URL = "http://localhost:4200";
 
-    loginPage = await initializePageObject(
-      page,
-      context,
-      request,
-      LoginPage,
-      (instance) => instance.navigateTo(BASE_URL)
-    );
+const ADMIN_ROUTES = {
+  dashboard: /\/admin(\/dashboard)?\b/,
+  services: /\/admin\/(services|service-management)\b/,
+  tickets: /\/admin\/(tickets|ticket-oversight)\b/,
+  login: /\/login\b/,
+};
+
+test.describe.serial("Admin Sidebar", () => {
+  let admin: AdminSidebarPage;
+
+  test.beforeEach(async ({ page }) => {
+    await ensureLoggedInAdmin(page);
+    admin = new AdminSidebarPage(page);
+    await admin.navigateTo(BASE_URL);
+    await expect(page).toHaveURL(/\/dashboard\b/);
   });
 
-  test("goto dashboard link", async ({ page }) => {
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSidebar.gotoDashboard();
-    await expect(page).toHaveURL(`${BASE_URL}/admin`);
+  test("links should be visible for admin", async () => {
+    await expect(admin.dashboardLink).toBeVisible();
+    await expect(admin.servicesManagementLink).toBeVisible();
+    await expect(admin.ticketOversightLink).toBeVisible();
+    await expect(admin.logoutLink).toBeVisible();
   });
-  test("goto service management link", async ({ page }) => {
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSidebar.gotoServiceManagement();
-    await expect(page).toHaveURL(`${BASE_URL}/admin/services`);
+
+  test("navigate to Dashboard", async ({ page }) => {
+    await admin.gotoDashboard();
+    await expect(page).toHaveURL(ADMIN_ROUTES.dashboard);
   });
-  test("goto ticket oversight link", async ({ page }) => {
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSidebar.gotoTicketOversight();
-    await expect(page).toHaveURL(`${BASE_URL}/admin/tickets`);
+
+  test("navigate to Service Management", async ({ page }) => {
+    await admin.gotoServiceManagement();
+    await expect(page).toHaveURL(ADMIN_ROUTES.services);
   });
-  test("logout link", async ({ page }) => {
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSidebar.logout();
-    await expect(page).toHaveURL(`${BASE_URL}/login`);
+
+  test("navigate to Ticket Oversight", async ({ page }) => {
+    await admin.gotoTicketOversight();
+    await expect(page).toHaveURL(ADMIN_ROUTES.tickets);
+  });
+
+  test("logout should clear session and redirect to /login", async ({
+    page,
+  }) => {
+    await admin.logout();
+    await expect(page).toHaveURL(ADMIN_ROUTES.login);
+    const token = await page.evaluate(() => localStorage.getItem("token"));
+    expect(token).toBeNull();
+  });
+});
+
+test.describe.serial("Admin guard (negative)", () => {
+  test("non-admin should not access /admin", async ({ page }) => {
+    // Default user ile giriş yap
+    await ensureLoggedInDefault(page);
+    await page.goto(`${BASE_URL}/admin`);
+
+    await expect(page).not.toHaveURL(/\/dashoard\b/);
   });
 });

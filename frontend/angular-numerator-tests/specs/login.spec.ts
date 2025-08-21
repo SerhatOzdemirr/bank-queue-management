@@ -1,34 +1,45 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../page-objects/login.page";
-import { initializePageObject, BASE_URL } from "../utils/testSetup";
 
-test.describe.serial("Login POM", () => {
+const BASE_URL = "http://localhost:4200";
+
+test.describe.serial("Login Page", () => {
   let loginPage: LoginPage;
 
-  test.beforeEach(async ({ page, context, request }) => {
-    loginPage = await initializePageObject(
-      page,
-      context,
-      request,
-      LoginPage,
-      (instance) => instance.navigateTo(BASE_URL)
-    );
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    await loginPage.navigateTo(BASE_URL);
   });
 
-  test("Should show error if fields are empty", async () => {
+  test("should show error if fields are empty", async () => {
     await loginPage.login("", "");
     const error = await loginPage.getErrorMessage();
-    expect(error).toBe("All fields are required.");
+    expect(error?.trim()).toBe("All fields are required.");
   });
 
-  test("Should show error for non-registered user ", async () => {
-    await loginPage.login("nonexisting@mail.com", "nonexistuser");
+  test("should show error for invalid credentials", async () => {
+    await loginPage.login("nonexisting@mail.com", "wrongpass");
     const error = await loginPage.getErrorMessage();
-    expect(error).toBe("User not found.");
+    expect(error?.trim()).toBe("User not found.");
   });
 
-  test("Successful login redirects to /numerator", async ({ page }) => {
+  test("default user should login successfully with valid credentials and redirect to /numerator", async ({
+    page,
+  }) => {
+    await loginPage.login("testdefault@mail.com", "123");
+
+    await expect(page).toHaveURL(/\/numerator\b/);
+
+    const token = await page.evaluate(() => localStorage.getItem("token"));
+    expect(token).toBeTruthy();
+  });
+  test("admin user should login successfully with valid credentials and redirect to /admin-dashboard", async ({
+    page,
+  }) => {
     await loginPage.login("u1@mail.com", "123");
-    await expect(page).toHaveURL(/\/numerator$/);
+    await expect(page).toHaveURL(/\/dashboard\b/);
+
+    const token = await page.evaluate(() => localStorage.getItem("token"));
+    expect(token).toBeTruthy();
   });
 });

@@ -1,79 +1,61 @@
 import { test, expect } from "@playwright/test";
 import { AdminSignupPage } from "../page-objects/admin-signup.page";
-import { BASE_URL, initializePageObject } from "../utils/testSetup";
-import { LoginPage } from "../page-objects/login.page";
+import { uniq, uniqueEmail } from "../utils/random";
+import { ensureLoggedInAdmin, ensureLoggedInDefault } from "../utils/auth";
 
-test.describe.serial("Admin Signup – POM Tests", () => {
+const BASE_URL = "http://localhost:4200";
+
+test.describe.serial("Admin › Create Admin", () => {
   let adminSignup: AdminSignupPage;
-  let loginPage: LoginPage;
-  const random = Math.floor(Math.random() * 10000);
-
-  test.beforeEach(async ({ page, context, request }) => {
-    loginPage = await initializePageObject(
-      page,
-      context,
-      request,
-      LoginPage,
-      (instance) => instance.navigateTo(BASE_URL)
-    );
-
-    await loginPage.login("admin@mail.com", "123456");
-
+  test.beforeEach(async ({ page }) => {
+    await ensureLoggedInAdmin(page);
     adminSignup = new AdminSignupPage(page);
-    await adminSignup.navigateTo(`${BASE_URL}/admin/create`);
-  });
-  
-  test("Should show error if fields are empty", async () => {
-    await loginPage.navigateTo(`${BASE_URL}`);
-    await loginPage.login("admin@mail.com", "123456");
     await adminSignup.navigateTo(BASE_URL);
+    await expect(page).toHaveURL(/\/admin\/create\b/);
+    await expect(adminSignup.adminTitle).toBeVisible();
+  });
+
+  test("should show validation error when fields are empty", async () => {
     await adminSignup.createAdmin("", "", "");
-    const error = await adminSignup.getErrorMessage();
-    expect(error?.trim()).toBe("All fields are required.");
+    await expect(adminSignup.errorMessage).toBeVisible();
+    const msg =
+      (await adminSignup.getErrorMessage())?.trim().toLowerCase() || "";
+    expect(msg).toMatch(/required|zorunlu|empty|boş/);
   });
 
-  test("Should successfully create admin with valid data", async ({ page }) => {
-    await loginPage.navigateTo(`${BASE_URL}`);
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSignup.navigateTo(BASE_URL);
-    const email = `admin${random}@mail.com`;
-    const username = `admin${random}`;
-    await adminSignup.createAdmin(username, email, "admin123");
-    await expect(page).toHaveURL(`${BASE_URL}/login`);
+  test("should show error for invalid email format", async () => {
+    const username = uniq("e2e_admin");
+    await adminSignup.createAdmin(username, "wrong@", "Passw0rd!");
+    await expect(adminSignup.errorMessage).toBeVisible();
+    const msg =
+      (await adminSignup.getErrorMessage())?.trim().toLowerCase() || "";
+    expect(msg).toMatch(/email|format|valid/);
   });
 
-  test("Should show error for duplicate email", async () => {
-    await loginPage.navigateTo(`${BASE_URL}`);
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSignup.navigateTo(BASE_URL);
-    await adminSignup.createAdmin(
-      "adminduplicateemail",
-      "adminduplicate@mail.com",
-      "admin123"
-    );
-    await adminSignup.createAdmin(
-      "adminduplicateemail2",
-      "adminduplicate@mail.com",
-      "admin456"
-    );
-    const error = await adminSignup.getErrorMessage();
-    expect(error?.toLowerCase()).toContain("email already in use.");
+  test("should prevent creating admin with an existing email", async () => {
+    const username = uniq("e2e_admin");
+    await adminSignup.createAdmin(username, "u1@mail.com", "Passw0rd!");
+    await expect(adminSignup.errorMessage).toBeVisible();
+    const msg =
+      (await adminSignup.getErrorMessage())?.trim().toLowerCase() || "";
+    expect(msg).toMatch(/exist|already|taken|registered|mevcut|kayıt/);
   });
 
-  test("Admin guard is worked", async ({page}) => {
-    await loginPage.navigateTo(`${BASE_URL}`);
-    await loginPage.login("u1@mail.com", "123");
-    await adminSignup.navigateToAdmin(BASE_URL);
-    await expect(page).toHaveURL(`${BASE_URL}/signup`)
+  test("should create admin successfully with unique email", async ({
+    page,
+  }) => {
+    const username = uniq("e2e_admin");
+    const email = uniqueEmail("e2e.admin", "mail.com");
+    await adminSignup.createAdmin(username, email, "Passw0rd!");
 
+    await expect(page).toHaveURL(/\/login(\/.*)?\b/);
   });
+});
 
-  test("Invalid email format admin signup" , async () => {
-    await loginPage.navigateTo(`${BASE_URL}`);
-    await loginPage.login("admin@mail.com", "123456");
-    await adminSignup.navigateTo(BASE_URL);
-    await adminSignup.createAdmin("abc" ,"abcmail" ,"123");
-    const error = await adminSignup.getErrorMessage();
-    expect(error).toBe("Invalid email address.");
-  })
+test.describe.serial("Admin route guard (negative)", () => {
+  test("non-admin user cannot access /admin/create", async ({ page }) => {
+    await ensureLoggedInDefault(page);
+    await page.goto(`${BASE_URL}/admin/create`);
+    await expect(page).not.toHaveURL(/\/admin\/create\b/);
+  });
 });

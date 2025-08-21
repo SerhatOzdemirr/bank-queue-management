@@ -9,7 +9,10 @@ export class AdminSidebarPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.dashboardLink = this.page.getByRole("link", { name: "Dashboard", exact:true });
+    this.dashboardLink = this.page.locator("a.active", {
+      hasText: "Dashboard",
+    });
+
     this.servicesManagementLink = this.page.getByRole("link", {
       name: "Service Management",
     });
@@ -31,7 +34,7 @@ export class AdminSidebarPage {
   async gotoTicketOversight() {
     await this.ticketOversightLink.click();
   }
-  async navigateTo(baseUrl: string) : Promise<void> {
+  async navigateTo(baseUrl: string): Promise<void> {
     await this.page.goto(`${baseUrl}/admin`);
   }
 }

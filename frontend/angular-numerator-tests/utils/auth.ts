@@ -1,111 +1,71 @@
-import { Page, Route } from "@playwright/test";
+import { Page, request } from "@playwright/test";
 
-export async function ensureLoggedInAgent(
+type DirectLoginOpts = {
+  appUrl?: string;
+  apiUrl?: string;
+  email: string;
+  password: string;
+  tokenKey?: string; 
+  postLoginPath?: string;
+};
+
+export async function loginDirectAndSetToken(
   page: Page,
-  opts?: {
-    tokenKey?: string; 
-    tokenValue?: string; // mock JWT
-    user?: { id: number; email: string; role: string; username: string };
-  }
+  {
+    appUrl = "http://localhost:4200",
+    apiUrl = "http://localhost:5034/api/auth",
+    email,
+    password,
+    tokenKey = "token", 
+    postLoginPath = "/profile",
+  }: DirectLoginOpts
 ) {
-  const tokenKey = opts?.tokenKey ?? "access_token";
-  const tokenValue = opts?.tokenValue ?? "test-jwt-token";
-  const user = opts?.user ?? {
-    id: 1,
-    email: "agenttest@example.com",
-    role: "Agent",
-    username: "AgentTester",
-  };
-
-  await page.addInitScript(
-    ([k, v]) => localStorage.setItem(k, v),
-    [tokenKey, tokenValue]
-  );
-
-  await page.route(/\/api\/auth\/me(\?.*)?$/i, async (route: Route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify(user),
-    });
+  const contextReq = await request.newContext();
+  const res = await contextReq.post(`${apiUrl}/login`, {
+    data: { email, password },
   });
 
-}
-export async function ensureLoggedInDefault(
-  page: Page,
-  opts?: {
-    tokenKey?: string; 
-    tokenValue?: string; // mock JWT
-    user?: { id: number; email: string; role: string; username: string };
+  if (!res.ok()) {
+    throw new Error(`Login API failed: ${res.status()} ${await res.text()}`);
   }
-) {
-  const tokenKey = opts?.tokenKey ?? "access_token";
-  const tokenValue = opts?.tokenValue ?? "test-jwt-token";
-  const user = opts?.user ?? {
-    id: 2,
-    email: "defaulttest@example.com",
-    role: "Default",
-    username: "DefaultTestUser",
-  };
+
+  const body = await res.json();
+  const token = body[tokenKey] ?? body.token ?? body.access_token;
+  if (!token) {
+    throw new Error("Token not found in login response");
+  }
+
+  console.log(`🔑 Direct token for ${email}:${token}`);
 
   await page.addInitScript(
-    ([k, v]) => localStorage.setItem(k, v),
-    [tokenKey, tokenValue]
+    ([k, v]) => {
+      localStorage.setItem(k, v);
+    },
+    [tokenKey, token]
   );
 
-  await page.route(/\/api\/auth\/me(\?.*)?$/i, async (route: Route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify(user),
-    });
-  });
+  await page.goto(`${appUrl}${postLoginPath}`);
 
-  await page.route(
-    /\/api\/(users\/me|profile)(\?.*)?$/i,
-    async (route: Route) => {
-      await route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify(user),
-      });
-    }
-  );
+  return token;
 }
 
-export async function ensureLoggedInAdmin(
-  page: Page,
-  opts?: {
-    tokenKey?: string; 
-    tokenValue?: string; // mock JWT
-    user?: { id: number; email: string; role: string; username: string };
-  }
-) {
-  const tokenKey = opts?.tokenKey ?? "access_token";
-  const tokenValue = opts?.tokenValue ?? "test-jwt-token";
-  const user = opts?.user ?? {
-    id: 3,
-    email: "admintest@example.com",
-    role: "Admin",
-    username: "AdminTestUser",
-  };
-
-  await page.addInitScript(
-    ([k, v]) => localStorage.setItem(k, v),
-    [tokenKey, tokenValue]
-  );
-
-  await page.route(/\/api\/auth\/me(\?.*)?$/i, async (route: Route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify(user),
-    });
+export async function ensureLoggedInAdmin(page: Page) {
+  return loginDirectAndSetToken(page, {
+    email: "u1@mail.com",
+    password: "123",
   });
+}
 
-  await page.route(
-    /\/api\/(users\/me|profile)(\?.*)?$/i,
-    async (route: Route) => {
-      await route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify(user),
-      });
-    }
-  );
+export async function ensureLoggedInAgent(page: Page) {
+  return loginDirectAndSetToken(page, {
+    email: "agent@mail.com",
+    password: "123",
+  });
+}
+
+export async function ensureLoggedInDefault(page: Page) {
+  return loginDirectAndSetToken(page, {
+    email: "testdefault@mail.com",
+    password: "123",
+  });
 }

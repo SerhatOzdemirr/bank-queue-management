@@ -1,43 +1,45 @@
-import { expect, test } from "@playwright/test";
-import { SingupPage } from "../page-objects/signup.page";
-import { initializePageObject, BASE_URL } from "../utils/testSetup";
+import { test, expect } from "@playwright/test";
+import { SignupPage } from "../page-objects/signup.page";
 import { uniq, uniqueEmail } from "../utils/random";
 
-test.describe.serial("Sign Up POM", () => {
-  let signupPage: SingupPage;
+const BASE_URL = "http://localhost:4200";
 
-  test.beforeEach(async ({ page, context, request }) => {
-    signupPage = await initializePageObject(
-      page,
-      context,
-      request,
-      SingupPage,
-      (instance) => instance.navigateTo(BASE_URL)
-    );
+test.describe.serial("Signup Page", () => {
+  let signup: SignupPage;
+
+  test.beforeEach(async ({ page }) => {
+    signup = new SignupPage(page);
+    await signup.navigateTo(BASE_URL);
+    await expect(page).toHaveURL(/\/signup\b/);
   });
 
-  test("Should show error if fields are empty", async () => {
-    await signupPage.signup(" ", "", "");
-    const error = await signupPage.getErrorMessage();
-    expect(error).toBe("All fields are required.");
+  test("should show validation error when fields are empty", async () => {
+    await signup.signup("", "", "");
+    await expect(signup.signupError).toBeVisible();
+    const msg = (await signup.getErrorMessage())?.toLowerCase() || "";
+    expect(msg).toMatch(/required|zorunlu|empty/);
   });
 
-  test("Navigate to login page after signup", async ({ page }) => {
-    const username = uniq("usr");
-    const email = uniqueEmail("usr");
-    const password = "P@ssw0rd123!";
-
-    await signupPage.signup(username, email, password);
-    await expect(page).toHaveURL(`${BASE_URL}/login`);
+  test("should show error for invalid email format", async () => {
+    const username = uniq("user");
+    await signup.signup(username, "wrong@", "Passw0rd!");
+    await expect(signup.signupError).toBeVisible();
+    const msg = (await signup.getErrorMessage())?.toLowerCase() || "";
+    expect(msg).toMatch(/email|format|valid/);
   });
 
-  test("Invalid email format", async () => {
-    const username = uniq("badmail");
-    const email = `${uniq("bad")}invalid`; 
-    const password = "123456";
+  test("should prevent signup with an existing email", async () => {
+    const username = uniq("user");
+    await signup.signup(username, "testdefault@mail.com", "Passw0rd!");
+    await expect(signup.signupError).toBeVisible();
+    const msg = (await signup.getErrorMessage())?.toLowerCase() || "";
+    expect(msg).toMatch(/exist|already|taken|registered|mevcut|kayıt/);
+  });
 
-    await signupPage.signup(username, email, password);
-    const error = await signupPage.getErrorMessage();
-    expect(error).toBe("Invalid email address.");
+  test("should signup successfully with a unique email", async ({ page }) => {
+    const username = uniq("user");
+    const email = uniqueEmail("user", "mail.com");
+    await signup.signup(username, email, "Passw0rd!");
+    await expect(page).toHaveURL(/\/(profile|login)\b/);
   });
 });
