@@ -62,7 +62,6 @@ export async function ensureLoggedInAgent(page: Page) {
     password: "123",
   });
 }
-
 export async function ensureLoggedInDefault(page: Page) {
   return loginDirectAndSetToken(page, {
     email: "testdefault@mail.com",
