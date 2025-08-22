@@ -17,7 +17,7 @@
             [class.disabled]="disabledCard(s)"
             (click)="selectService(s)"
           >
-            <h3>{{ s.label }}</h3>
+            <h3 class="label-service">{{ s.label }}</h3>
             <small *ngIf="disabledCard(s)">
               {{ s.currentNumber }} / {{ s.maxNumber }} — doldu
             </small>
