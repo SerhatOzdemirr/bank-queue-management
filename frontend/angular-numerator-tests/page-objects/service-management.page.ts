@@ -5,9 +5,10 @@ export class ServiceManagementPage {
 
   readonly header: Locator;
   readonly newServiceBtn: Locator;
-  readonly serviceRows: Locator;
+  readonly rows: Locator;
 
   // Add Modal
+  readonly addModal: Locator;
   readonly addKeyInput: Locator;
   readonly addLabelInput: Locator;
   readonly addMaxInput: Locator;
@@ -17,6 +18,7 @@ export class ServiceManagementPage {
   readonly addCancelBtn: Locator;
 
   // Edit Modal
+  readonly editModal: Locator;
   readonly editKeyInput: Locator;
   readonly editLabelInput: Locator;
   readonly editMaxInput: Locator;
@@ -28,123 +30,148 @@ export class ServiceManagementPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.header = page.getByRole("heading", { name: "Service Management" });
+    this.header = page.getByRole("link", { name: "Service Management" });
     this.newServiceBtn = page.getByRole("button", { name: "+ New Service" });
-    this.serviceRows = page.locator("tbody tr");
+    this.rows = page.locator("tbody tr");
 
-    this.addKeyInput = page.locator(".modal input").nth(0);
-    this.addLabelInput = page.locator(".modal input").nth(1);
-    this.addMaxInput = page.locator(".modal input").nth(2);
-    this.addPriorityInput = page.locator(".modal input").nth(3);
-    this.addActiveCheckbox = page.locator(".modal input[type='checkbox']");
-    this.addSaveBtn = page.locator(".modal button", { hasText: "Save" });
-    this.addCancelBtn = page.locator(".modal button", {
-      hasText: "Cancel",
-    });
+    // Add modal (scoped to #add-modal)
+    this.addModal = page.locator("#add-modal");
+    this.addKeyInput = this.addModal.locator("input").nth(0);
+    this.addLabelInput = this.addModal.locator("input").nth(1);
+    this.addMaxInput = this.addModal.locator('input[type="number"]').nth(0);
+    this.addPriorityInput = this.addModal
+      .locator('input[type="number"]')
+      .nth(1);
+    this.addActiveCheckbox = this.addModal.locator('input[type="checkbox"]');
+    this.addSaveBtn = this.addModal.getByRole("button", { name: "Save" });
+    this.addCancelBtn = this.addModal.getByRole("button", { name: "Cancel" });
 
-    // Edit Modal
-    this.editKeyInput = page.locator("#edit-modal input").nth(0);
-    this.editLabelInput = page.locator("#edit-modal input").nth(1);
-    this.editMaxInput = page.locator("#edit-modal input").nth(2);
-    this.editPriorityInput = page.locator("#edit-modal input").nth(3);
-    this.editActiveCheckbox = page.locator(
-      "#edit-modal input[type='checkbox']"
-    );
-    this.editSaveBtn = page.locator("#edit-modal button", { hasText: "Save" });
-    this.editCancelBtn = page.locator("#edit-modal button", {
-      hasText: "Cancel",
-    });
+    // Edit modal (scoped to #edit-modal)
+    this.editModal = page.locator("#edit-modal");
+    this.editKeyInput = this.editModal.locator("input").nth(0);
+    this.editLabelInput = this.editModal.locator("input").nth(1);
+    this.editMaxInput = this.editModal.locator('input[type="number"]').nth(0);
+    this.editPriorityInput = this.editModal
+      .locator('input[type="number"]')
+      .nth(1);
+    this.editActiveCheckbox = this.editModal.locator('input[type="checkbox"]');
+    this.editSaveBtn = this.editModal.getByRole("button", { name: "Save" });
+    this.editCancelBtn = this.editModal.getByRole("button", { name: "Cancel" });
   }
-  async gotoServiceManagementPage(baseUrl) {
+
+  async goto(baseUrl: string) {
     await this.page.goto(`${baseUrl}/admin/services`);
+    await expect(this.header).toBeVisible();
+    await this.header.click();
   }
-  async openAddServiceModal() {
+
+  /* ---------- Row helpers ---------- */
+
+  rowByLabel(label: string): Locator {
+    // 2. sütun (Label + badge) üzerinde label'i arar
+    return this.page.locator("tbody tr").filter({
+      has: this.page.locator("td:nth-child(2)", { hasText: label }),
+    });
+  }
+
+  activeCheckboxInRow(row: Locator): Locator {
+    return row.locator(".active-checkbox");
+  }
+
+  priorityBadgeInRow(row: Locator): Locator {
+    return row.locator("td:nth-child(2) .prio-badge");
+  }
+
+  async expectServiceVisible(label: string) {
+    await expect(this.rowByLabel(label)).toHaveCount(1);
+  }
+
+  async expectServiceNotVisible(label: string) {
+    await expect(this.rowByLabel(label)).toHaveCount(0);
+  }
+
+  async expectPriorityBadge(label: string, badge: string) {
+    await expect(this.priorityBadgeInRow(this.rowByLabel(label))).toHaveText(
+      badge
+    );
+  }
+
+  async expectActive(label: string, isChecked: boolean) {
+    const cb = this.activeCheckboxInRow(this.rowByLabel(label));
+    await expect(cb).toBeChecked({ checked: isChecked });
+  }
+
+  /* ---------- Add ---------- */
+
+  async openAddModal() {
     await this.newServiceBtn.click();
+    await expect(this.addModal).toBeVisible();
   }
+
   async fillAddForm(
-    addKey: string,
-    addLabel: string,
-    addMaxNumber: number,
-    addPriority: number,
-    addActive: boolean
+    key: string,
+    label: string,
+    maxNum: number,
+    priority: number,
+    active: boolean
   ) {
-    await this.addKeyInput.fill(addKey);
-    await this.addLabelInput.fill(addLabel);
-    await this.addMaxInput.fill(addMaxNumber.toString());
-    await this.addPriorityInput.fill(addPriority.toString());
-    if (addActive) {
-      await this.addActiveCheckbox.check();
-    } else {
-      await this.addActiveCheckbox.uncheck();
-    }
+    await this.addKeyInput.fill(key);
+    await this.addLabelInput.fill(label);
+    await this.addMaxInput.fill(String(maxNum));
+    await this.addPriorityInput.fill(String(priority));
+    if (active) await this.addActiveCheckbox.check();
+    else await this.addActiveCheckbox.uncheck();
   }
+
   async saveAdd() {
     await this.addSaveBtn.click();
+    await expect(this.addModal).toBeHidden();
   }
-  async cancelAdd() {
-    await this.addCancelBtn.click();
+
+  /* ---------- Edit ---------- */
+
+  async openEditModalByLabel(label: string) {
+    const row = this.rowByLabel(label);
+    await row.getByRole("button", { name: "Edit" }).click();
+    await expect(this.editModal).toBeVisible();
   }
-  async openEditModal(rowIndex: number) {
-    await this.serviceRows
-      .nth(rowIndex)
-      .getByRole("button", { name: "Edit" })
-      .click();
-  }
+
   async fillEditForm(
-    editKey: string,
-    editLabel: string,
-    editMaxNumber: number,
-    editPriority: number,
-    editActive: boolean
+    key: string,
+    label: string,
+    maxNum: number,
+    priority: number,
+    active: boolean
   ) {
-    await this.editKeyInput.fill(editKey);
-    await this.editLabelInput.fill(editLabel);
-    await this.editMaxInput.fill(editMaxNumber.toString());
-    await this.editPriorityInput.fill(editPriority.toString());
-    if (editActive) {
-      await this.addActiveCheckbox.check();
-    } else {
-      await this.addActiveCheckbox.uncheck();
-    }
+    await this.editKeyInput.fill(key);
+    await this.editLabelInput.fill(label);
+    await this.editMaxInput.fill(String(maxNum));
+    await this.editPriorityInput.fill(String(priority));
+    if (active) await this.editActiveCheckbox.check();
+    else await this.editActiveCheckbox.uncheck();
   }
+
   async saveEdit() {
     await this.editSaveBtn.click();
+    await expect(this.editModal).toBeHidden();
   }
-  async cancelEdit() {
-    await this.editCancelBtn.click();
+
+  /* ---------- Toggle Active ---------- */
+
+  async toggleActive(label: string) {
+    await this.activeCheckboxInRow(this.rowByLabel(label)).click();
   }
-  async toggleActive(rowIndex: number) {
-    await this.serviceRows.nth(rowIndex).locator(".active-checkbox").click();
-  }
-  async deleteService(rowIndex: number) {
-    const label = await this.serviceRows
-      .nth(rowIndex)
-      .locator("td")
-      .nth(1)
-      .innerText();
+
+  /* ---------- Delete ---------- */
+
+  async deleteByLabel(label: string) {
+    const row = this.rowByLabel(label);
 
     this.page.once("dialog", async (dialog) => {
-      console.log(dialog.message()); // "Delete service 'a_new'?"
-      await dialog.accept(); // OK
+      await dialog.accept();
     });
 
-    await this.serviceRows
-      .nth(rowIndex)
-      .getByRole("button", { name: "Delete" })
-      .click();
-    await expect(
-      this.page.locator("tbody tr td", { hasText: label })
-    ).toHaveCount(0);
-  }
-
-  async expectServiceExists(label: string) {
-    await expect(
-      this.page.locator("tbody tr td", { hasText: label })
-    ).toBeVisible();
-  }
-  async expectServiceNotExists(label: string) {
-    await expect(
-      this.page.locator("tbody tr td", { hasText: label })
-    ).toHaveCount(0);
+    await row.getByRole("button", { name: "Delete" }).click();
+    await this.expectServiceNotVisible(label);
   }
 }
