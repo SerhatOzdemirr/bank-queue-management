@@ -6,10 +6,11 @@ import {
 } from "../../services/admin-users.service";
 import { BootstrapStyleService } from "../../services/bootstrap-styles.service";
 import { ThemeService } from "../../services/theme.service";
+import { FormsModule } from "@angular/forms";
 @Component({
   selector: "app-admin-users",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,FormsModule],
   templateUrl: "./admin-users.html",
   styleUrl: "./admin-users.css",
 })

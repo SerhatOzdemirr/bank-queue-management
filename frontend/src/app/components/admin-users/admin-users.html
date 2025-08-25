@@ -16,6 +16,7 @@
         <th>Actions</th>
       </tr>
     </thead>
+
     <tbody>
       <tr *ngFor="let u of users; let i = index">
         <td>{{ u.id }}</td>
@@ -26,7 +27,9 @@
             type="number"
             min="1"
             max="5"
-            [value]="u.priorityScore"
+            step="1"
+            [(ngModel)]="u.priorityScore"
+            [ngModelOptions]="{ standalone: true }"
             class="form-control form-control-sm border-0 shadow-none"
           />
         </td>
