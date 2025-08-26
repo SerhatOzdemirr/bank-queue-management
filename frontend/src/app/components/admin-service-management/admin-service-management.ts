@@ -15,32 +15,34 @@ import { ServiceItem } from "../../services/service-item";
 })
 export class ServiceManagementComponent implements OnInit {
   services: ServiceItem[] = [];
-  updatedPriority = 3; // NEW
-  addedPriority = 3;
-  /* ---------- Edit modal state ---------- */
+
+  // Edit modal state
   editModalVisible = false;
   private serviceToEdit?: ServiceItem;
   updatedKey = "";
   updatedLabel = "";
   updatedActive = true;
   updatedMax = 100;
+  updatedPriority = 3;
 
-  /* ---------- Add modal state ---------- */
+  // Add modal state
   addModalVisible = false;
   addedKey = "";
   addedLabel = "";
   addedActive = true;
   addedMax = 100;
+  addedPriority = 3;
 
-  /* ---------- Dependencies ---------- */
+  // Toggle durum kilidi (her servis için)
+  activeUpdating: Record<number, boolean> = {};
+
+  // Dependencies
   private readonly adminService = inject(AdminService);
 
-  /* ---------- Lifecycle ---------- */
   ngOnInit(): void {
     this.loadServices();
   }
 
-  /* ---------- Data ---------- */
   private loadServices(): void {
     this.adminService.getServices().subscribe({
       next: (list) => {
@@ -52,18 +54,36 @@ export class ServiceManagementComponent implements OnInit {
     });
   }
 
-  /* ---------- Table actions ---------- */
-  toggleActive(svc: ServiceItem): void {
+  // Checkbox toggle: optimistic UI + disable + rollback on error
+  onToggleActive(svc: ServiceItem, ev: Event): void {
+    const checked = (ev.target as HTMLInputElement).checked;
+    const prev = svc.isActive;
+
+    svc.isActive = checked; // optimistic UI
+    this.activeUpdating[svc.id] = true; // input'u kilitle
+
     this.adminService
       .updateService(svc.id, {
         serviceKey: svc.serviceKey,
         label: svc.label,
-        isActive: !svc.isActive,
+        isActive: checked,
         maxNumber: svc.maxNumber,
+        priority: svc.priority, // API üzerinde varsa koru
       })
       .subscribe({
-        next: () => this.loadServices(),
-        error: (err) => console.error("Update failed", err),
+        next: () => {
+          // İstersen tekrar sırala; tam reload yerine hafif dokunuş:
+          this.services = [...this.services].sort(
+            (a, b) => b.priority - a.priority || a.label.localeCompare(b.label)
+          );
+        },
+        error: (err) => {
+          svc.isActive = prev; // rollback
+          console.error("Update failed", err);
+        },
+      })
+      .add(() => {
+        this.activeUpdating[svc.id] = false; // kilidi kaldır
       });
   }
 
@@ -80,6 +100,7 @@ export class ServiceManagementComponent implements OnInit {
         label: svc.label,
         isActive: svc.isActive,
         maxNumber,
+        priority: svc.priority,
       })
       .subscribe({
         next: () => this.loadServices(),
@@ -95,7 +116,7 @@ export class ServiceManagementComponent implements OnInit {
     });
   }
 
-  /* ---------- Edit modal ---------- */
+  // Edit modal
   showEditModal(svc: ServiceItem): void {
     this.serviceToEdit = svc;
     this.updatedKey = svc.serviceKey;
@@ -115,7 +136,7 @@ export class ServiceManagementComponent implements OnInit {
         label: this.updatedLabel.trim(),
         isActive: this.updatedActive,
         maxNumber: this.updatedMax,
-        priority : this.updatedPriority,
+        priority: this.updatedPriority,
       })
       .subscribe({
         next: () => {
@@ -125,13 +146,11 @@ export class ServiceManagementComponent implements OnInit {
         error: (err) => console.error("Save edit failed", err),
       });
   }
-
   cancelEdit(): void {
     this.editModalVisible = false;
     this.serviceToEdit = undefined;
   }
-
-  /* ---------- Add modal ---------- */
+  // Add modal
   showAddModal(): void {
     this.addedKey = "";
     this.addedLabel = "";
@@ -140,7 +159,6 @@ export class ServiceManagementComponent implements OnInit {
     this.addedPriority = 3;
     this.addModalVisible = true;
   }
-
   saveAdd(): void {
     this.adminService
       .addService({
@@ -148,7 +166,7 @@ export class ServiceManagementComponent implements OnInit {
         label: this.addedLabel.trim(),
         isActive: this.addedActive,
         maxNumber: this.addedMax,
-        priority : this.addedPriority,
+        priority: this.addedPriority,
       })
       .subscribe({
         next: () => {
@@ -158,8 +176,10 @@ export class ServiceManagementComponent implements OnInit {
         error: (err) => console.error("Add failed", err),
       });
   }
-
   cancelAdd(): void {
     this.addModalVisible = false;
+  }
+  trackById(_: number, s: ServiceItem) {
+    return s.id;
   }
 }

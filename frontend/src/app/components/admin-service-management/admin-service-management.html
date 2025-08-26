@@ -17,7 +17,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let svc of services">
+        <tr *ngFor="let svc of services; trackBy: trackById">
           <td>{{ svc.serviceKey }}</td>
           <td>
             {{ svc.label }}
@@ -35,7 +35,8 @@
               class="active-checkbox"
               type="checkbox"
               [checked]="svc.isActive"
-              (change)="toggleActive(svc)"
+              [disabled]="activeUpdating[svc.id]"
+              (change)="onToggleActive(svc, $event)"
             />
           </td>
           <td>{{ svc.maxNumber }}</td>
@@ -69,7 +70,6 @@
           max="5"
           [(ngModel)]="updatedPriority"
       /></label>
-      <!-- NEW -->
       <div class="checbox-div">
         <label
           >Active:<br /><input type="checkbox" [(ngModel)]="updatedActive"
@@ -96,7 +96,6 @@
           max="5"
           [(ngModel)]="addedPriority"
       /></label>
-      <!-- NEW -->
       <div class="checbox-div">
         <label
           >Active:<br /><input type="checkbox" [(ngModel)]="addedActive"
