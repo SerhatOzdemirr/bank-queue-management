@@ -3,120 +3,139 @@
   margin: 0 auto;
   padding: 1rem;
   box-sizing: border-box;
-  background-color: var(--secondary-color);
+  background: var(--secondary-color);
+  color: var(--text-color);
+  overflow-x: auto;
+  border-radius: 8px;
+  font-size: clamp(14px, 1.6vw, 16px);
 }
 
 .admin-tickets h2 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  font-size: clamp(18px, 2.4vw, 22px);
   text-align: center;
   color: var(--text-color);
 }
 
-/* Kontrollerin hizalanması */
-.admin-tickets label,
-.admin-tickets select
-{
-  margin-bottom: 1rem;
-  vertical-align: middle;
-  color: var(--text-color);
-
-}
-.admin-tickets select{
-  width: 350px;
-  outline: none;
-  border: none;
-  border-radius: 5px;
-  padding: 5px;
-  color: var(--tertiary-color);
-
-}
-.admin-tickets select option {
-  background-color: var(--tertiary-color);
-  cursor: pointer;
-  color: var(--text-color);
-}
-.label-select{
+.label-select-btn {
   display: flex;
-  height: 40px;
-  gap: 2rem;
-}
-.label-select-btn{
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  height: 40px;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
-.admin-tickets button {
-  background-color: var(--tertiary-color);
+
+.label-select {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 320px;
+  min-width: 220px;
+}
+
+.admin-tickets label {
+  margin: 0;
+  white-space: nowrap;
   color: var(--text-color);
-  border-radius: 5px;
-  border: none;
-  outline: none;
+  opacity: 0.9;
 }
-/* Select genişliği mobilde tam */
+
 .admin-tickets select {
-  min-width: 150px;
-}
-
-.admin-tickets .table-wrapper {
-  overflow-x: auto;
-  margin-top: 1rem;
-}
-
-/* Tablo stil */
-.admin-tickets table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px; 
-  scrollbar-color: var(--tertiary-color) !important;
-
-}
-
-
-.admin-tickets td {
-  padding: 0.5rem;
-  border: 1px solid var(--text-color);
-  text-align: left;
-  white-space: nowrap;
+  inline-size: clamp(220px, 40vw, 420px);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--tertiary-color);
+  outline: none;
+  background-color: var(--secondary-color);
   color: var(--text-color);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background 0.15s ease;
+}
 
+.admin-tickets select:focus-visible {
+  border-color: var(--tertiary-color);
+  box-shadow: 0 0 0 3px
+    color-mix(in oklab, var(--tertiary-color) 30%, transparent);
 }
-.admin-tickets th{
-  background-color: var(--primary-color);
-  padding: 0.5rem;
-   border: 1px solid var(--text-color);
-  text-align: left;
-  white-space: nowrap;
+
+.admin-tickets select option {
+  background: var(--secondary-color);
   color: var(--text-color);
-}
-/* Action butonu */
-.admin-tickets button {
-  padding: 0.4rem 0.8rem;
   cursor: pointer;
 }
 
-/* Loading ve boş mesaj */
+.admin-tickets button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background: var(--tertiary-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.admin-tickets button:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.admin-tickets button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-tickets .loading,
+.admin-tickets .empty {
+  margin-top: 1rem;
+  font-style: italic;
+  text-align: center;
+  opacity: 0.9;
+}
+
 .admin-tickets div[ng-reflect-ng-if] {
   margin-top: 1rem;
   font-style: italic;
   text-align: center;
 }
 
-/* Responsive ayarları */
-@media (max-width: 768px) {
-  .admin-tickets label,
-  .admin-tickets select,
-  .admin-tickets button {
-    display: block;
-    width: 100%;
-    margin-right: 0;
-  }
+.admin-tickets table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+  background: color-mix(in oklab, var(--secondary-color) 92%, transparent);
+}
 
-  .admin-tickets select {
-    margin-top: 0.5rem;
-  }
+.admin-tickets th,
+.admin-tickets td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--text-color) 65%, transparent);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-color);
+  font-size: clamp(13px, 1.5vw, 15px);
+}
 
-  .admin-tickets button {
-    margin-top: 0.5rem;
-  }
+.admin-tickets th {
+  background: var(--primary-color);
+  color: var(--text-color);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.admin-tickets td button {
+  padding: 0.4rem 0.8rem;
+}
+
+.admin-tickets::-webkit-scrollbar {
+  height: 10px;
+}
+.admin-tickets::-webkit-scrollbar-track {
+  background: color-mix(in oklab, var(--secondary-color) 85%, transparent);
+}
+.admin-tickets::-webkit-scrollbar-thumb {
+  background: var(--tertiary-color);
+  border-radius: 6px;
 }

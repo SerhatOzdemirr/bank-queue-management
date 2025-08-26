@@ -9,6 +9,14 @@
     &#9776;
   </button>
   <div class="nav-items" [class.open]="menuOpen">
+    <a
+      *ngIf="auth.isLoggedIn()"
+      routerLink="/profile"
+      class="nav-avatar"
+      [title]="profile?.username || 'Profile'"
+    >
+      <img [src]="toAbs(profile?.avatarUrl)" alt="Profile" />
+    </a>
     <!-- Numerator always for authenticated users -->
     <a *ngIf="auth.isLoggedIn(); else disabledNum" routerLink="/numerator">
       Take Number
@@ -19,9 +27,18 @@
     </ng-template>
 
     <!-- Admin Dashboard -->
-    <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin">
-      Dashboard
-    </a>
+    <!-- Admin Dashboard Dropdown -->
+    <div class="dropdown" *ngIf="auth.isLoggedIn() && auth.isAdmin()">
+      <button class="dropbtn">Admin Dashboard ▾</button>
+      <div class="dropdown-content">
+        <a routerLink="/admin">Dashboard</a>
+        <a routerLink="/admin/services">Service Management</a>
+        <a routerLink="/admin/tickets">Ticket Oversight</a>
+        <a routerLink="/admin/settings">Settings</a>
+        <a (click)="logout()">Logout</a>
+      </div>
+    </div>
+
     <a *ngIf="auth.isLoggedIn() && auth.isAdmin()" routerLink="/admin/create">
       Create Admin
     </a>
@@ -63,14 +80,5 @@
     <button *ngIf="auth.isLoggedIn()" class="logout-btn" (click)="logout()">
       Logout
     </button>
-
-    <a
-      *ngIf="auth.isLoggedIn()"
-      routerLink="/profile"
-      class="nav-avatar"
-      [title]="profile?.username || 'Profile'"
-    >
-      <img [src]="toAbs(profile?.avatarUrl)" alt="Profile" />
-    </a>
   </div>
 </nav>

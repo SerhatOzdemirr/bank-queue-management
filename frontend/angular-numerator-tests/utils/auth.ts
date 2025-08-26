@@ -35,7 +35,7 @@ export async function loginDirectAndSetToken(
     throw new Error("Token not found in login response");
   }
 
-  console.log(`🔑 Direct token for ${email}:${token}`);
+  console.log(`Direct token for ${email}:${token}`);
 
   await page.addInitScript(
     ([k, v]) => {
