@@ -14,6 +14,7 @@ export interface TicketAssignment {
   status: "Pending" | "Accepted" | "Rejected";
   effectivePriority: number;
   username: string;
+  servicePriority : number;
 }
 export interface RouteCandidate {
   agentId: number;

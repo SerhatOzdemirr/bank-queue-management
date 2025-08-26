@@ -7,7 +7,7 @@ import {
   UpdateProfileDto,
 } from "../../services/profile.service";
 import { environment } from "../../../environment";
-
+import { AuthService } from "../../services/auth.service";
 @Component({
   selector: "app-profile-header",
   standalone: true,
@@ -17,6 +17,7 @@ import { environment } from "../../../environment";
 })
 export class ProfileHeader implements OnInit {
   private profilesvc = inject(ProfileService);
+  private authSvc = inject(AuthService);
 
   profile?: ProfileDto;
   showEditModal = false;
@@ -27,6 +28,7 @@ export class ProfileHeader implements OnInit {
     password: "",
   };
 
+  
   ngOnInit() {
     // reactive abone ol
     this.profilesvc.profile$.subscribe((p) => {
@@ -41,6 +43,9 @@ export class ProfileHeader implements OnInit {
     this.profilesvc.loadProfile().subscribe();
   }
 
+  logout(){
+    this.authSvc.logout();
+  }
   toAbs(url?: string | null) {
     if (!url) return "assets/avatar-placeholder.svg";
     const base = environment.apiUrl.replace(/\/api$/, "");

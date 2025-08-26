@@ -22,51 +22,70 @@ public class AgentTicketsService : IAgentTicketsService
         return agent?.Id;
     }
 
-    public async Task<IEnumerable<object>> GetMyTicketsAsync(int agentId)
+  public async Task<IEnumerable<object>> GetMyTicketsAsync(int agentId)
+{
+    var now = DateTime.UtcNow;
+const int AgingStepMinutes = 5;
+const int MaxPriority = 5;
+
+var list = await _ctx.TicketAssignments
+    .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
+    .Join(_ctx.Tickets,
+        ta => ta.TicketId,
+        t => t.Id,
+        (ta, t) => new { ta, t })
+    .Join(_ctx.Users,
+        tt => tt.t.UserId,
+        u => u.Id,
+        (tt, u) => new { tt.ta, tt.t, u })
+    .GroupJoin(_ctx.Services,
+        ttu => ttu.t.ServiceKey,
+        s0 => s0.Key,
+        (ttu, sg) => new { ttu.ta, ttu.t, ttu.u, sg })
+    .SelectMany(
+        x => x.sg.DefaultIfEmpty(),
+        (x, s) => new
+        {
+            x.ta,
+            x.t,
+            x.u,
+            s
+        })
+    .Select(x => new
     {
-        var now = DateTime.UtcNow;
-        const int AgingStepMinutes = 5;
-        const int MaxPriority = 5;
-
-        var list = await _ctx.TicketAssignments
-            .Where(ta => ta.AgentId == agentId && ta.Status == "Pending")
-            .Join(_ctx.Tickets, ta => ta.TicketId, t => t.Id, (ta, t) => new { ta, t })
-            .Join(_ctx.Users, tt => tt.t.UserId, u => u.Id, (tt, u) => new { tt.ta, tt.t, u })
-            .AsNoTracking()
-            .Select(x => new
-            {
-                ticketId = x.t.Id,
-                number = x.t.Number,
-                serviceKey = x.t.ServiceKey,
-                serviceLabel = x.t.ServiceLabel,
-                takenAt = x.t.TakenAt,
-                assignedAt = x.ta.AssignedAt,
-                status = x.ta.Status,
-                basePriority = x.u.PriorityScore,
-                waitingMinutes = (int)((now - x.ta.AssignedAt).TotalMinutes),
-                username = x.u.Username
-            })
-            .Select(x => new
-            {
-                x.ticketId,
-                x.number,
-                x.serviceKey,
-                x.serviceLabel,
-                x.takenAt,
-                x.assignedAt,
-                x.status,
-                username = x.username,
-                effectivePriority = Math.Min(
-                    MaxPriority,
-                    x.basePriority + (x.waitingMinutes / AgingStepMinutes)
-                )
-            })
-            .OrderByDescending(x => x.effectivePriority)
-            .ThenBy(x => x.assignedAt)
-            .ToListAsync();
-
+        ticketId = x.t.Id,
+        number = x.t.Number,
+        serviceKey = x.t.ServiceKey,
+        serviceLabel = x.t.ServiceLabel,
+        takenAt = x.t.TakenAt,
+        assignedAt = x.ta.AssignedAt,
+        status = x.ta.Status,
+        username = x.u.Username,
+        servicePriority = x.s != null ? x.s.Priority : 0,
+        waitingMinutes = (int)((now - x.ta.AssignedAt).TotalMinutes),
+        basePriority = x.u.PriorityScore
+    })
+    .Select(x => new
+    {
+        x.ticketId,
+        x.number,
+        x.serviceKey,
+        x.serviceLabel,
+        x.takenAt,
+        x.assignedAt,
+        x.status,
+        x.username,
+        x.servicePriority,
+        effectivePriority = Math.Min(MaxPriority, x.basePriority + (x.waitingMinutes / AgingStepMinutes))
+    })
+    .OrderByDescending(x => x.servicePriority)      // önce service priority
+    .ThenByDescending(x => x.effectivePriority)     // sonra user+aging priority
+    .ThenBy(x => x.assignedAt)                      // eşitlikte daha eski önce
+    .AsNoTracking()
+    .ToListAsync();
         return list;
 }
+
     public async Task AcceptAsync(int agentId, int ticketId)
     {
         var assignment = await _ctx.TicketAssignments

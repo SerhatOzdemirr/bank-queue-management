@@ -7,7 +7,8 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Priority Level</th>
+        <th>Service Priority</th>
+        <th>User Priority</th>
         <th>Service</th>
         <th>Taken At</th>
         <th>Assigned At</th>
@@ -28,6 +29,7 @@
         }"
       >
         <td>{{ t.number }}</td>
+        <td>{{t.servicePriority}}</td>
         <td>{{ t.effectivePriority }}</td>
         <td>{{ t.serviceLabel }} ({{ t.serviceKey }})</td>
         <td>{{ format(t.takenAt) }}</td>

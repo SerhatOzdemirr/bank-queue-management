@@ -199,4 +199,7 @@
   .nav-avatar{
     order: -1;
   }
+  .brand{
+    font-size: 11px !important;
+  }
 }

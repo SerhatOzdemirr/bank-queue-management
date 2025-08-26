@@ -56,17 +56,7 @@
 
     <div class="spacer"></div>
 
-    <label for="theme-select" class="theme-label">Theme:</label>
-    <select
-      #themeSelect
-      id="theme-select"
-      (change)="applyTheme(themeSelect.value)"
-      [value]="currentTheme"
-    >
-      <option *ngFor="let t of themes" [value]="t">
-        {{ t === "default" ? "Default" : (t | titlecase) }}
-      </option>
-    </select>
+    
 
     <!-- Sign-In / Sign-Up -->
     <a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="sign-in-link">
