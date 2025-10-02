@@ -1,334 +1,271 @@
-BankNumerator — Bank Queue Management System
-============================================
 
-> A full-stack, role-based queue management app for bank branches.**Frontend:** Angular 20 + Chart.js • **Backend:** ASP.NET Core 9 Web API • **DB:** PostgreSQL
+# BankNumerator — Bank Queue Management System
 
-Contents
---------
+> **Frontend:** Angular 20 + Chart.js • **Backend:** ASP.NET Core 9 Web API • **DB:** PostgreSQL
 
-*   [Overview](#overview)
-    
-*   [Key Features](#key-features)
-    
-*   [Architecture](#architecture)
-    
-*   [Tech Stack](#tech-stack)
-    
-*   [Directory Structure](#directory-structure)
-    
-*   [Getting Started](#getting-started)
-    
-    *   [Backend Setup](#backend-setup)
-        
-    *   [Frontend Setup](#frontend-setup)
-        
-*   [Configuration](#configuration)
-    
-*   [API Overview](#api-overview)
-    
-*   [Roles & Workflows](#roles--workflows)
-    
-*   [Analytics](#analytics)
-    
-*   [Testing](#testing)
-    
-*   [Deployment](#deployment)
-    
-*   [Contributing](#contributing)
-    
-*   [License](#license)
-    
-*   [Acknowledgements](#acknowledgements)
-    
+---
 
-Overview
---------
+### Intro
+**BankNumerator** bankacılık şubeleri için sıra yönetim sistemidir. Müşteriler numara alır/iptal eder, **ajanlar** (agents) yeteneklerine göre biletleri işler, **yöneticiler** (admins) servisleri/ajanları/kullanıcıları ve istatistikleri yönetir.
 
-**BankNumerator** allows customers to take and cancel numbered tickets for banking services. **Agents** process tickets according to their skills. **Administrators** manage services, agents, users, and monitor real-time analytics.
+- JWT + salted/hashed parola
+- Öncelik farkındalıklı kuyruk (servis önceliği + kullanıcı önceliği + bekleme süresi yaşlandırma)
+- Agent skill & ticket routing
+- Chart.js ile admin panelleri
 
-*   Secure **JWT authentication** with **hashed passwords**
-    
-*   Priority-aware queuing (service & user priority + waiting time aging)
-    
-*   Agent skills & routing
-    
-*   Admin dashboards with **Chart.js**
-    
+---
 
-Key Features
-------------
+### Key Features
+- **Role-based model:** Default User, Admin, Agent  
+- **Ticket issuing & cancel:** günlük limit, sayaç artış/azalış, zaman damgası  
+- **Dynamic priority:** servis önceliği + kullanıcı önceliği + bekleme yaşlandırma  
+- **Admin controls:** servis CRUD, de/aktivasyon, limit, kullanıcı **PriorityScore (1–5)**  
+- **Agent ops:** kendi bekleyen biletlerini önceliğe göre görme, **accept / reject / release / route**  
+- **Analytics:** servis başına bilet sayıları, ajan aktivitesi (pending/accepted/rejected)  
+- **Clean REST API:** Auth, Services, Numerator, Admin, Admin/Agents, Agent/Tickets
 
-*   **Role-based model**
-    
-    *   Roles: Default User, Admin, Agent
-        
-    *   Passwords stored as salted hashes; JWT-based auth
-        
-*   **Ticket issuing & cancellation**
-    
-    *   Per-service daily limits, counter increments/decrements
-        
-    *   Persisted tickets with service label, user, timestamps
-        
-*   **Dynamic priority queue**
-    
-    *   Ordering by **service priority**, **user priority**, and **wait time aging**
-        
-*   **Admin controls**
-    
-    *   Create/update/deactivate/limit services
-        
-    *   View/cancel any ticket; list users and set **PriorityScore (1–5)**
-        
-*   **Agent operations**
-    
-    *   View own pending tickets by effective priority
-        
-    *   **Accept / Reject / Release / Route** (routing requires destination agent skill)
-        
-*   **Analytics dashboard**
-    
-    *   Ticket counts per service
-        
-    *   Agent activity (pending/accepted/rejected totals)
-        
-*   **Agent & skill management**
-    
-    *   Create agents, assign skills, enforce unique email/username
-        
-    *   Transactional creation for consistency
-        
-*   **Clean REST API**
-    
-    *   Auth, Services, Numerator (tickets), Admin, Admin/Agents, Agent/Tickets
-        
+---
 
-Architecture
-------------
+### Architecture
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Angular 20 SPA (Auth/Guards, Services, Components)     Chart.js                   │                          ▲                   │ HTTP (JWT)               │ Charts Data                   ▼                          │          ASP.NET Core 9 Web API (Controllers + Domain Services)                   │                   ▼               PostgreSQL (EF Core ORM)   `
+Angular 20 SPA (Auth/Guards, Services, Components)     Chart.js
+│                          ▲
+│ HTTP (JWT)               │ Charts Data
+▼                          │
+ASP.NET Core 9 Web API (Controllers + Domain Services)
+│
+▼
+PostgreSQL (EF Core ORM)
+
+```
 
 **Tiers**
+- **Client:** Login, Signup, Numerator, Admin Dashboard/Service/Agents/Tickets, Agent Tickets
+- **Server:** ASP.NET Core 9 (JWT, DI, Swagger, PostgreSQL)
+- **Data:** Users, Agents, AgentSkills, ServiceItems, ServiceCounters, Tickets, TicketAssignments
+
+---
+
+### Tech Stack
+- **Frontend:** Angular 20, RxJS, Chart.js
+- **Backend:** .NET 9 (ASP.NET Core Web API), EF Core (Npgsql)
+- **Database:** PostgreSQL
+- **Testing:** Karma/Jasmine (unit), Playwright (E2E)
+
+---
+
+### Directory Structure
+```
 
-*   **Client:** Angular 20 SPA (Login, Signup, Numerator, Admin Dashboard/Service/Agents/Tickets, Agent Tickets)
-    
-*   **Server:** ASP.NET Core 9 Web API (JWT, DI, Swagger, PostgreSQL)
-    
-*   **Data:** PostgreSQL tables: Users, Agents, AgentSkills, ServiceItems, ServiceCounters, Tickets, TicketAssignments
-    
+bank-queue-management/
+├─ backend/
+│  └─ BankNumerator.Api/
+│     ├─ Controllers/        # Auth, Services, Numerator, Admin, AgentTickets, AdminAgents
+│     ├─ Services/           # AuthService, NumeratorService, AdminService, AgentTicketsService, ...
+│     ├─ Models/             # User, Agent, ServiceItem, Ticket, AgentSkill, TicketAssignment, ...
+│     └─ Data/               # BankNumeratorContext (DbContext)
+├─ frontend/
+│  ├─ src/                   # Angular app (components, services, guards, interceptor)
+│  ├─ package.json           # Angular 20 + Chart.js + Playwright deps
+│  └─ playwright.config.ts
+└─ BankNumerator_Sofware_Design_Document.pdf
 
-Tech Stack
-----------
+````
 
-*   **Frontend:** Angular 20, RxJS, Chart.js
-    
-*   **Backend:** .NET 9 (ASP.NET Core Web API), EF Core (Npgsql)
-    
-*   **Database:** PostgreSQL
-    
-*   **Testing:** Karma/Jasmine (unit), Playwright (E2E)
-    
+---
 
-Directory Structure
--------------------
+### Getting Started
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   bank-queue-management/  ├─ backend/  │  └─ BankNumerator.Api/            # ASP.NET Core 9 Web API  │     ├─ Controllers/               # Auth, Services, Numerator, Admin, AgentTickets, AdminAgents  │     ├─ Services/                  # AuthService, NumeratorService, AdminService, AgentTicketsService, ...  │     ├─ Models/                    # User, Agent, ServiceItem, Ticket, AgentSkill, TicketAssignment, ...  │     └─ Data/                      # BankNumeratorContext (DbContext)  ├─ frontend/  │  ├─ src/                          # Angular app (components, services, guards, interceptor)  │  ├─ package.json                  # Angular 20 + Chart.js + Playwright deps  │  └─ playwright.config.ts  └─ BankNumerator_Sofware_Design_Document.pdf   `
+#### Prerequisites
+- **Backend:** .NET SDK 9, PostgreSQL
+- **Frontend:** Node.js ≥ 18, npm, Angular CLI v20 (`npm i -g @angular/cli`)
 
-Getting Started
----------------
+#### Clone
+```bash
+git clone https://github.com/SerhatOzdemirr/bank-queue-management.git
+cd bank-queue-management
+````
 
-### Prerequisites
+#### Backend Setup
 
-*   **Backend:** .NET SDK 9, PostgreSQL server
-    
-*   **Frontend:** Node.js ≥ 18, npm, Angular CLI v20 (npm i -g @angular/cli)
-    
+```bash
+cd backend/BankNumerator.Api
+dotnet restore
+# Migrations (varsa atla, yoksa ekle)
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+# Run
+dotnet run
+```
 
-### Clone
+> Varsayılan port örn. `https://localhost:5001` (Development’ta Swagger açık)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git clone https://github.com/SerhatOzdemirr/bank-queue-management.git  cd bank-queue-management   `
+#### Frontend Setup
 
-### Backend Setup
+```bash
+cd ../../frontend
+npm install
+# src/environments/environment.ts içinde API Base URL: http://localhost:5000/api (ör.)
+ng serve
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd backend/BankNumerator.Api  dotnet restore   `
+> Uygulama: `http://localhost:4200/`
 
-Configure **connection string** and **JWT** (see [Configuration](#configuration)).Apply migrations (add if missing) and update DB:
+---
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   dotnet ef migrations add InitialCreate  dotnet ef database update   `
+### Configuration
 
-Run API:
+#### Backend (`appsettings.json` or env vars)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   dotnet run   `
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=banknumerator;Username=postgres;Password=yourpassword"
+  },
+  "JwtSettings": {
+    "Key": "your-very-strong-secret",
+    "Issuer": "BankNumerator",
+    "Audience": "BankNumeratorClients",
+    "DurationInMinutes": 60
+  }
+}
+```
 
-> API will listen on your configured port (e.g., https://localhost:5001). Swagger is enabled in Development.
+#### Frontend (`src/environments/environment.ts`)
 
-### Frontend Setup
+```ts
+export const environment = {
+  production: false,
+  apiBaseUrl: 'http://localhost:5000/api'
+};
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd ../../frontend  npm install   `
+---
 
-Set the API base URL in src/environments/environment.ts (e.g., http://localhost:5000/api).
+### API Overview
 
-Run dev server:
+#### Auth (`/api/auth`)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ng serve   `
+* `POST /signup` — default user kaydı
+* `POST /login` — JWT al
+* `POST /signup-admin` — admin kaydı (Admin role)
 
-> App runs at http://localhost:4200/.
+#### Services (`/api/services`)
 
-Configuration
--------------
+* `GET /` — aktif servisler (anonymous)
 
-### Backend (appsettings.json or environment variables)
+#### Numerator (`/api/numerator`) — *Authenticated*
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   {    "ConnectionStrings": {      "DefaultConnection": "Host=localhost;Port=5432;Database=banknumerator;Username=postgres;Password=yourpassword"    },    "JwtSettings": {      "Key": "your-very-strong-secret",      "Issuer": "BankNumerator",      "Audience": "BankNumeratorClients",      "DurationInMinutes": 60    }  }   `
+* `GET /next?service={serviceKey}` — servis için bilet ver
+* `DELETE /{ticketId}` — kullanıcının biletini iptal et
 
-### Frontend (src/environments/environment.ts)
+#### Admin (`/api/admin`) — *Admin only*
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   export const environment = {    production: false,    apiBaseUrl: 'http://localhost:5000/api'  };   `
+* **Services:** create/update/deactivate/limit, sayaçlarla listele
+* **Tickets:** tümünü listele (servise göre filtrele), composite ile iptal
+* **Users:** hepsini listele, **PriorityScore (1–5)** güncelle
 
-API Overview
-------------
+#### Admin Agents (`/api/admin/agents`) — *Admin only*
 
-### Auth (/api/auth)
+* `GET /` — ajan + yetenek listesi
+* `POST /` — benzersiz e-posta/kullanıcı + yeteneklerle ajan oluştur (transactional)
+* `DELETE /{id}` — ajan sil
 
-*   POST /signup – Register default user
-    
-*   POST /login – Authenticate and receive JWT
-    
-*   POST /signup-admin – Register admin (requires Admin role)
-    
+#### Agent Tickets (`/api/agent/tickets`) — *Agent only*
 
-### Services (/api/services)
+* `GET /` — bekleyen biletler (etkin önceliğe göre sıralı)
+* `POST /accept` • `POST /reject` • `POST /release`
+* `POST /route` — başka yetenekli ajana yönlendir
+* `GET /route-candidates/{serviceKey}` — uygun ajanları listele
 
-*   GET / – List active services (anonymous)
-    
+---
 
-### Numerator (/api/numerator) — _Authenticated_
+### Roles & Workflows
 
-*   GET /next?service={serviceKey} – Issue next ticket for a service
-    
-*   DELETE /{ticketId} – Cancel user’s ticket
-    
+#### Default Users
 
-### Admin (/api/admin) — _Admin only_
+* Sign up / log in
+* Aktif servisleri gör
+* Günlük limit uygunsa bilet al
+* Bilet no / servis / atanan ajanı gör
+* Kendi biletini iptal et
 
-*   **Services:** create/update/deactivate/limit; list with counters
-    
-*   **Tickets:** list all (filter by service), cancel by composite
-    
-*   **Users:** list all, update **PriorityScore (1–5)**
-    
+#### Administrators
 
-### Admin Agents (/api/admin/agents) — _Admin only_
-
-*   GET / – List agents with skills
-    
-*   POST / – Create agent (unique email/username) + skills (transactional)
-    
-*   DELETE /{id} – Remove agent
-    
+* **Services:** key/label/active/max/priority (1–5)
+* **Users:** **PriorityScore** ayarla
+* **Agents:** yeteneklerle ajan oluştur, benzersiz kimlikleri koru
+* **Tickets:** listele, filtrele, iptal et
+* **Analytics:** servis sayıları & ajan aktivitesi
 
-### Agent Tickets (/api/agent/tickets) — _Agent only_
+#### Agents
 
-*   GET / – Pending tickets ordered by effective priority
-    
-*   POST /accept / POST /reject / POST /release
-    
-*   POST /route – Route to another skilled agent
-    
-*   GET /route-candidates/{serviceKey} – Eligible agents for a service
-    
+* Kendi bekleyen biletlerini **servis önceliği + kullanıcı önceliği + bekleme yaşlandırma** ile sıralı gör
+* **Accept / Reject / Release**
+* **Route** (hedef ajanın ilgili yeteneği olmalı)
 
-Roles & Workflows
------------------
+---
 
-### Default Users
+### Analytics
 
-*   Sign up / log in
-    
-*   View active services
-    
-*   Take a ticket (if service active and within daily limit)
-    
-*   See ticket number, service, assigned agent
-    
-*   Cancel own ticket
-    
+* **Service ticket counts:** bugün / 7g / 30g aralıkları
+* **Agent activity:** pending / accepted / rejected + son biletler
+  *(Chart.js ile Admin Dashboard’da görselleştirilir.)*
 
-### Administrators
+---
 
-*   **Manage Services:** key, label, active, max number, priority (1–5)
-    
-*   **Manage Users:** set **PriorityScore**
-    
-*   **Manage Agents:** create agents with skills, enforce unique identifiers
-    
-*   **Review/Cancel Tickets:** list, filter, cancel
-    
-*   **Monitor Analytics:** service counts & agent activity
-    
+### Testing
 
-### Agents
+#### Frontend
 
-*   See own pending tickets ordered by **service priority + user priority + wait aging**
-    
-*   **Accept / Reject / Release** tickets
-    
-*   **Route** tickets to qualified agents (must have skill)
-    
+```bash
+# E2E (Playwright)
+npx playwright test
 
-Analytics
----------
+# Unit (Karma/Jasmine)
+ng test
+```
 
-*   **Service ticket counts:** totals per service for ranges (today / 7d / 30d)
-    
-*   **Agent activity:** pending / accepted / rejected totals + recent tickets listBacked by dedicated aggregation services used by the Admin dashboard’s Chart.js widgets.
-    
+> Backend testleri eklenmemiştir; services & controllers için xUnit önerilir.
 
-Testing
--------
+---
 
-### Frontend
+### Deployment
 
-*   npx playwright test
-    
+#### Frontend (Angular)
 
-> Backend tests are not included yet; consider adding xUnit projects for services & controllers.
+```bash
+ng build --configuration production
+# dist/ içeriğini reverse proxy / web server arkasından servis edin
+```
 
-Deployment
-----------
+#### Backend (ASP.NET Core)
 
-### Frontend (Angular)
+```bash
+dotnet publish -c Release
+# Ortam değişkenleriyle bağlantı dizesi ve JWT ayarlarını prod'da yapılandırın
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ng build --configuration production   `
+---
 
-Serve files from dist/ behind a web server / reverse proxy.
+### Contributing
 
-### Backend (ASP.NET Core)
+1. Fork + feature branch
+2. Konvansiyonel commit mesajları
+3. Backend build + frontend testleri geçmeli
+4. Açıklayıcı Pull Request aç
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   dotnet publish -c Release   `
+---
 
-Deploy published output to your hosting environment (Linux service, IIS, container, etc.). Configure environment variables for connection string and JWT in production.
+### License
 
-Contributing
-------------
+Lisans dosyası yok. Üretimde kullanacaksanız uygun bir açık kaynak lisansı (örn. MIT) ekleyin veya maintainer ile iletişime geçin.
 
-1.  Fork the repo and create a feature branch.
-    
-2.  Make changes with clear, conventional commit messages.
-    
-3.  Ensure backend builds and frontend tests pass.
-    
-4.  Open a pull request describing your change set.
-    
+---
 
-Bug reports & feature requests are welcome via **Issues**.
+### Acknowledgements
 
-License
--------
+Developed by **Serhat Özdemir**.
+Detaylı mimari/ veri tasarımı / UI akışları için depodaki **Software Design Document**’a bakınız.
 
-No license file is present. For production use or adaptation, please contact the maintainer or add a suitable open-source license (e.g., MIT).
-
-Acknowledgements
-----------------
-
-Developed by **Serhat Özdemir**.See the included **Software Design Document** for detailed architecture, data design, and UI flows; this README summarizes and streamlines those details.
